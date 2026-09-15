@@ -1,0 +1,529 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow-x: clip;
+    max-width: 100vw;
+  }
+
+  body {
+    background-color: #FAF9F7;
+    color: #0B0C10;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+    max-width: 100vw;
+  }
+
+  #root {
+    overflow-x: clip;
+    max-width: 100vw;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Oswald', 'Anton', sans-serif;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  /* Smooth transitions on interactive elements */
+  a, button {
+    transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* Safe fluid image loading */
+  img {
+    max-width: 100%;
+    height: auto;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+  }
+}
+
+/* Official Logo Brand Color Utilities */
+.bg-jj-pink {
+  background-color: #FF1E56 !important;
+}
+
+.text-jj-pink {
+  color: #FF1E56 !important;
+}
+
+.border-jj-pink {
+  border-color: #FF1E56 !important;
+}
+
+.bg-jj-yellow {
+  background-color: #FFDE00 !important;
+}
+
+.text-jj-yellow {
+  color: #FFDE00 !important;
+}
+
+.border-jj-yellow {
+  border-color: #FFDE00 !important;
+}
+
+.font-outfit {
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif !important;
+}
+
+/* ─── Seamless section transitions ─── */
+.section-transition-dark {
+  position: relative;
+}
+.section-transition-dark::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, #0B0C10);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.section-transition-light {
+  position: relative;
+}
+.section-transition-light::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, #FAF9F7);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Custom organic blob masks */
+.blob-mask-1 {
+  border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%;
+}
+
+.blob-mask-2 {
+  border-radius: 40% 60% 30% 70% / 60% 30% 70% 40%;
+}
+
+.blob-mask-3 {
+  border-radius: 70% 30% 50% 50% / 30% 50% 50% 70%;
+}
+
+/* ─── Premium custom scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F5F3EF;
+}
+::-webkit-scrollbar-thumb {
+  background: #C4BFB6;
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF1E56;
+}
+
+/* ─── Hide scrollbar utilities ─── */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Smooth fluid font clamp utilities */
+.clamp-hero {
+  font-size: clamp(2.5rem, 6vw, 7.5rem);
+  line-height: 0.95;
+}
+
+.clamp-heading {
+  font-size: clamp(2rem, 4.5vw, 4.5rem);
+  line-height: 0.96;
+}
+
+/* ─── Utility: clip-path text reveal ─── */
+.clip-reveal {
+  clip-path: inset(100% 0% 0% 0%);
+  will-change: clip-path, transform;
+}
+
+.clip-reveal.revealed {
+  clip-path: inset(0% 0% 0% 0%);
+}
+
+.resp-cta-section {
+  padding-bottom: 0 !important;
+}
+
+/* ==========================================================================
+   MOBILE-FIRST RESPONSIVE ARCHITECTURE
+   Base styles work flawlessly on the smallest phone (320px) first,
+   and progressively enhance using clamp() and min-width queries.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. BASE STYLES (Mobile First: 320px and above)
+   -------------------------------------------------------------------------- */
+
+/* Section Spacing */
+.resp-section {
+  padding-top: clamp(3.25rem, 6vw, 7rem);
+  padding-bottom: clamp(3.25rem, 6vw, 7rem);
+}
+
+.resp-section-tight {
+  padding-top: clamp(2.25rem, 4vw, 4.5rem);
+  padding-bottom: clamp(2.25rem, 4vw, 4.5rem);
+}
+
+/* Content Gutters */
+.resp-container {
+  width: 100%;
+  max-width: 100%;
+  padding-left: clamp(1rem, 3.5vw, 2.5rem);
+  padding-right: clamp(1rem, 3.5vw, 2.5rem);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Typography Scales */
+.resp-hero-title {
+  font-size: clamp(2.15rem, 5.2vw + 0.4rem, 4.75rem);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+
+.resp-section-title {
+  font-size: clamp(1.75rem, 3.8vw + 0.4rem, 3.75rem);
+  line-height: 1.08;
+}
+
+.resp-subtext {
+  font-size: clamp(0.95rem, 1.1vw + 0.35rem, 1.25rem);
+  line-height: 1.6;
+}
+
+/* Hero Marketing Video Frame */
+.resp-hero-video-frame {
+  width: 100%;
+  max-width: min(880px, 92vw);
+  aspect-ratio: 16 / 9;
+  max-height: 380px;
+  border-radius: clamp(1.25rem, 3vw, 2.5rem);
+  margin-bottom: clamp(1.75rem, 3vw, 3rem);
+}
+
+/* Viral Reel Card */
+.resp-reel-card {
+  width: clamp(255px, 78vw, 345px);
+  max-width: calc(100vw - 32px);
+  border-radius: clamp(20px, 3.5vw, 34px);
+}
+
+.resp-reel-container {
+  min-height: clamp(540px, 70vh, 840px);
+  padding-top: clamp(3rem, 6vw, 7rem);
+  padding-bottom: clamp(4rem, 8vw, 9rem);
+}
+
+/* Cards Padding and Radius */
+.resp-card {
+  padding: clamp(1.35rem, 3vw, 2.75rem);
+  border-radius: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+/* Yellow Newsletter CTA */
+.resp-yellow-cta-box {
+  padding: clamp(1.5rem, 3.5vw, 3.75rem) clamp(1.25rem, 3vw, 3.5rem);
+  border-radius: clamp(16px, 2.5vw, 22px);
+  box-shadow: clamp(6px, 1.2vw, 12px) clamp(6px, 1.2vw, 12px) #FFF4AB;
+}
+
+.resp-yellow-cta-title {
+  font-size: clamp(1.55rem, 3.2vw + 0.4rem, 3.25rem);
+  line-height: 1.02;
+}
+
+.resp-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.resp-form-input {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 0.65rem;
+  border-right-width: 1px;
+}
+
+.resp-form-btn {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 0.65rem;
+  justify-content: center;
+}
+
+.resp-cta-graphic {
+  width: clamp(160px, 25vw, 310px);
+  margin-top: 1rem;
+}
+
+/* Action Buttons */
+.resp-btn-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 340px;
+  gap: 0.75rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.resp-btn-action {
+  width: 100%;
+  min-height: 48px;
+  justify-content: center;
+  padding: 0.85rem 1.5rem;
+}
+
+/* Services Suite (ResultsMetrics) */
+.resp-services-section {
+  padding-top: clamp(3rem, 5vw, 7rem);
+  padding-bottom: clamp(2.5rem, 5vw, 5rem);
+}
+
+.resp-services-header-wrap {
+  margin-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.resp-services-stack {
+  row-gap: clamp(5rem, 10vw, 16rem);
+  padding-bottom: clamp(3rem, 5vw, 7rem);
+}
+
+.resp-service-card-wrap {
+  padding-top: clamp(8.5rem, 20vw, 10.5rem);
+}
+
+/* Fluid Service Image Sizing */
+.resp-service-img-side {
+  width: clamp(118px, 28vw, 145px);
+  height: clamp(105px, 25vw, 128px);
+  border-radius: 1.2rem;
+}
+
+.resp-service-img-center {
+  width: clamp(134px, 32vw, 165px);
+  height: clamp(118px, 28vw, 142px);
+  border-radius: 1.2rem;
+}
+
+.resp-service-card {
+  padding: clamp(1.4rem, 2.8vw, 3rem) clamp(1.15rem, 2.5vw, 3rem);
+  border-radius: clamp(1.6rem, 2.5vw, 3rem);
+}
+
+.resp-service-title {
+  font-size: clamp(1.55rem, 2.5vw + 0.3rem, 2.65rem);
+  line-height: 1.12;
+}
+
+.resp-service-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.resp-service-metrics-col {
+  border-left-width: 0;
+  border-top-width: 1px;
+  padding-left: 0;
+  padding-top: 1.25rem;
+}
+
+.resp-service-cta {
+  width: 100%;
+  min-height: 48px;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   2. TABLET ENHANCEMENTS (640px and Above)
+   -------------------------------------------------------------------------- */
+@media screen and (min-width: 640px) {
+  .resp-form-row {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .resp-form-input {
+    width: clamp(260px, 28vw, 320px);
+    border-radius: 0.5rem 0 0 0.5rem;
+    border-right-width: 0;
+  }
+
+  .resp-form-btn {
+    width: auto;
+    border-radius: 0 0.5rem 0.5rem 0;
+  }
+
+  .resp-cta-graphic {
+    margin-top: 0;
+  }
+
+  .resp-btn-group {
+    flex-direction: row;
+    width: auto;
+    max-width: none;
+    gap: clamp(0.85rem, 1.5vw, 1.25rem);
+  }
+
+  .resp-btn-action {
+    width: auto;
+    min-height: 52px;
+    padding: 0.9rem clamp(1.5rem, 2vw, 2.25rem);
+  }
+
+  .resp-service-cta {
+    width: auto;
+  }
+
+  .resp-services-header-wrap {
+    margin-bottom: 7rem;
+  }
+
+  .resp-service-card-wrap {
+    padding-top: 11rem;
+  }
+
+  .resp-service-img-side {
+    width: 215px;
+    height: 185px;
+    border-radius: 1.6rem;
+  }
+
+  .resp-service-img-center {
+    width: 240px;
+    height: 205px;
+    border-radius: 1.6rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. DESKTOP ENHANCEMENTS (1024px and Above)
+   -------------------------------------------------------------------------- */
+@media screen and (min-width: 1024px) {
+  .resp-container {
+    max-width: 80rem;
+  }
+
+  .resp-services-header-wrap {
+    margin-bottom: 18rem;
+  }
+
+  .resp-services-stack {
+    row-gap: 16rem;
+  }
+
+  .resp-service-card-wrap {
+    padding-top: 7rem;
+  }
+
+  .resp-service-img-side {
+    width: 295px;
+    height: 245px;
+    border-radius: 2.2rem;
+  }
+
+  .resp-service-img-center {
+    width: 325px;
+    height: 265px;
+    border-radius: 2.2rem;
+  }
+
+  .resp-btn-action {
+    min-height: 56px;
+    padding: 1rem 2.25rem;
+  }
+
+  .resp-service-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 3rem;
+  }
+
+  .resp-service-metrics-col {
+    border-left-width: 1px;
+    border-top-width: 0;
+    padding-left: 2.5rem;
+    padding-top: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. ULTRA-WIDE ENHANCEMENTS (1600px and Above)
+   -------------------------------------------------------------------------- */
+@media screen and (min-width: 1600px) {
+  .resp-container {
+    max-width: 90rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. ACCESSIBILITY: PREFERS-REDUCED-MOTION
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. BESPOKE INTERACTIVE SPOTLIGHT CARD UTILITY
+   -------------------------------------------------------------------------- */
+.luxury-spotlight-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.luxury-spotlight-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(420px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 30, 86, 0.08), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.luxury-spotlight-card:hover::after {
+  opacity: 1;
+}
+
