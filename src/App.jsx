@@ -23,12 +23,19 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function App() {
   const [consultationOpen, setConsultationOpen] = useState(false);
+  const [currentHash, setCurrentHash] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.location.hash || '';
+    }
+    return '';
+  });
+
   const [currentRoute, setCurrentRoute] = useState(() => {
     if (typeof window !== 'undefined') {
       const p = window.location.pathname.toLowerCase();
       const h = window.location.hash.toLowerCase();
       if (p === '/about' || h === '#about') return '/about';
-      if (p === '/services' || h === '#services') return '/services';
+      if (p === '/services' || h === '#services' || h.startsWith('#hotel') || h.startsWith('#restaurant') || h === '#services-showcase') return '/services';
       if (p === '/case-studies' || p === '/cases' || p === '/portfolio' || h === '#cases') return '/case-studies';
       if (p === '/contact' || h === '#contact') return '/contact';
     }
@@ -38,45 +45,69 @@ export default function App() {
   const handleOpenConsultation = () => setConsultationOpen(true);
   const handleCloseConsultation = () => setConsultationOpen(false);
 
-  const handleNavigate = (targetRoute, targetHash) => {
+  const handleNavigate = (targetRoute, targetHash = '') => {
     setCurrentRoute(targetRoute);
+    setCurrentHash(targetHash);
+
     if (typeof window !== 'undefined') {
-      const fullPath = targetRoute + (targetHash && targetHash !== targetRoute && targetHash !== '#hero' ? targetHash : '');
+      const cleanHash = targetHash && targetHash !== targetRoute && targetHash !== '#hero' ? targetHash : '';
+      const fullPath = targetRoute + cleanHash;
       window.history.pushState(null, '', fullPath || '/');
-      
-      if (
-        targetRoute === '/about' || 
-        targetRoute === '/services' || 
-        targetRoute === '/case-studies' || 
-        targetRoute === '/contact'
-      ) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (targetHash) {
-        setTimeout(() => {
-          const el = document.querySelector(targetHash);
+
+      const scrollToTarget = () => {
+        const navbarHeight = 85;
+
+        // If a specific section hash was requested
+        if (cleanHash) {
+          const el = document.querySelector(cleanHash);
           if (el) {
-            el.scrollIntoView({ behavior: 'smooth' });
-          } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const elementPosition = el.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+            window.scrollTo({
+              top: Math.max(0, offsetPosition),
+              behavior: 'smooth'
+            });
+            return;
           }
-        }, 100);
-      } else {
+
+          // Fallback if target is on services page
+          if (targetRoute === '/services') {
+            const showcase = document.querySelector('#services-showcase') || document.querySelector('#service-details');
+            if (showcase) {
+              const elementPosition = showcase.getBoundingClientRect().top;
+              const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+              window.scrollTo({
+                top: Math.max(0, offsetPosition),
+                behavior: 'smooth'
+              });
+              return;
+            }
+          }
+        }
+
+        // Default scroll to top for standard page navigations
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      };
+
+      // Slight delay to allow React route transition / rendering
+      setTimeout(scrollToTarget, 100);
     }
   };
 
   useEffect(() => {
     const handlePopState = () => {
       const p = window.location.pathname.toLowerCase();
-      const h = window.location.hash.toLowerCase();
-      if (p === '/about' || h === '#about') {
+      const h = window.location.hash;
+      setCurrentHash(h || '');
+
+      const hLower = (h || '').toLowerCase();
+      if (p === '/about' || hLower === '#about') {
         setCurrentRoute('/about');
-      } else if (p === '/services' || h === '#services') {
+      } else if (p === '/services' || hLower === '#services' || hLower.startsWith('#hotel') || hLower.startsWith('#restaurant') || hLower === '#services-showcase') {
         setCurrentRoute('/services');
-      } else if (p === '/case-studies' || p === '/cases' || p === '/portfolio' || h === '#cases') {
+      } else if (p === '/case-studies' || p === '/cases' || p === '/portfolio' || hLower === '#cases') {
         setCurrentRoute('/case-studies');
-      } else if (p === '/contact' || h === '#contact') {
+      } else if (p === '/contact' || hLower === '#contact') {
         setCurrentRoute('/contact');
       } else {
         setCurrentRoute('/');
@@ -128,6 +159,7 @@ export default function App() {
       ) : currentRoute === '/services' ? (
         <main>
           <ServicesPage 
+            targetHash={currentHash}
             onOpenConsultation={handleOpenConsultation}
             onNavigateHome={() => handleNavigate('/', '#hero')}
           />

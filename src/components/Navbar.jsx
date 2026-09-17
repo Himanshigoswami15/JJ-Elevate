@@ -172,9 +172,18 @@ export default function Navbar({ onOpenConsultation, currentRoute = '/', onNavig
 
                           <div className="pt-2.5 mt-1.5 border-t border-gray-100">
                             <a
-                              href="/services"
-                              onClick={(e) => handleLinkClick(e, { route: '/services', href: '/services' })}
-                              className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-jj-pink hover:bg-jj-dark transition-colors rounded-full shadow-sm"
+                              href="/services#services-showcase"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setMobileMenuOpen(false);
+                                setServicesDropdownOpen(false);
+                                if (onNavigate) {
+                                  onNavigate('/services', '#services-showcase');
+                                } else {
+                                  window.location.href = '/services#services-showcase';
+                                }
+                              }}
+                              className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-jj-pink hover:bg-jj-dark transition-colors rounded-full shadow-sm cursor-pointer"
                             >
                               <span>EXPLORE ALL SERVICES</span>
                               <ArrowUpRight className="w-3.5 h-3.5" />

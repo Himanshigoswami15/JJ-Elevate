@@ -176,23 +176,55 @@ const servicesData = [
   }
 ];
 
-export default function ServicesPage({ onOpenConsultation, onNavigateHome }) {
+export default function ServicesPage({ targetHash, onOpenConsultation, onNavigateHome }) {
   const [activeTab, setActiveTab] = useState(() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const hashId = window.location.hash.replace('#', '');
-      const match = servicesData.find(s => s.id === hashId);
+    const hash = targetHash || (typeof window !== 'undefined' ? window.location.hash : '');
+    if (hash) {
+      const hashId = hash.replace('#', '').toLowerCase();
+      const match = servicesData.find(s => s.id.toLowerCase() === hashId);
       if (match) return match.id;
     }
     return servicesData[0].id;
   });
 
-  // Sync with URL hash if navigated from navbar dropdown
+  // Sync with targetHash prop or URL hash whenever navigated
+  useEffect(() => {
+    const hash = targetHash || (typeof window !== 'undefined' ? window.location.hash : '');
+    if (hash) {
+      const hashId = hash.replace('#', '').toLowerCase();
+      const match = servicesData.find(s => s.id.toLowerCase() === hashId);
+      if (match) {
+        setActiveTab(match.id);
+        setTimeout(() => {
+          const el = document.getElementById(match.id) || document.getElementById('services-showcase') || document.getElementById('service-details');
+          if (el) {
+            const navbarHeight = 85;
+            const offset = el.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+            window.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+          }
+        }, 120);
+      } else if (hashId === 'services' || hashId === 'services-showcase') {
+        setTimeout(() => {
+          const el = document.getElementById('services-showcase');
+          if (el) {
+            const navbarHeight = 85;
+            const offset = el.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+            window.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+          }
+        }, 120);
+      }
+    }
+  }, [targetHash]);
+
+  // Also support native popstate/hashchange
   useEffect(() => {
     const handleHashChange = () => {
       if (window.location.hash) {
-        const hashId = window.location.hash.replace('#', '');
-        const match = servicesData.find(s => s.id === hashId);
-        if (match) setActiveTab(match.id);
+        const hashId = window.location.hash.replace('#', '').toLowerCase();
+        const match = servicesData.find(s => s.id.toLowerCase() === hashId);
+        if (match) {
+          setActiveTab(match.id);
+        }
       }
     };
     window.addEventListener('hashchange', handleHashChange);
@@ -205,6 +237,17 @@ export default function ServicesPage({ onOpenConsultation, onNavigateHome }) {
     setActiveTab(id);
     if (typeof window !== 'undefined') {
       window.history.replaceState(null, '', `/services#${id}`);
+    }
+    // On mobile and tablet screens, smoothly bring the active service into view
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setTimeout(() => {
+        const el = document.getElementById('service-details');
+        if (el) {
+          const navbarHeight = 85;
+          const offset = el.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+          window.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+        }
+      }, 50);
     }
   };
 
@@ -240,7 +283,7 @@ export default function ServicesPage({ onOpenConsultation, onNavigateHome }) {
         {/* =====================================================================
             2. STICKY SIDEBAR + INTERACTIVE SERVICE DETAILS
            ===================================================================== */}
-        <section className="pb-24">
+        <section id="services-showcase" className="pb-24 scroll-mt-28">
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             
             {/* Left Sticky Sidebar */}
@@ -253,7 +296,8 @@ export default function ServicesPage({ onOpenConsultation, onNavigateHome }) {
                   return (
                     <button
                       key={service.id}
-                      id={service.id}
+                      id={`sidebar-${service.id}`}
+                      data-service-id={service.id}
                       onClick={() => handleSelectService(service.id)}
                       className={`group w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-[13.5px] font-body text-left transition-all duration-300 ${
                         isActive
@@ -283,15 +327,16 @@ export default function ServicesPage({ onOpenConsultation, onNavigateHome }) {
             </aside>
 
             {/* Right Interactive Service Content */}
-            <div className="flex-1 min-w-0 w-full">
+            <div id="service-details" className="flex-1 min-w-0 w-full scroll-mt-28">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeService.id}
+                  id={activeService.id}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.3 }}
-                  className="space-y-6 sm:space-y-8"
+                  className="space-y-6 sm:space-y-8 scroll-mt-28"
                 >
                   
                   {/* Top Showcase Hero Card */}
