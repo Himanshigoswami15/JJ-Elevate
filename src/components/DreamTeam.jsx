@@ -56,16 +56,29 @@ export const teamMembersData = [
     specialties: ['Google Hotel Ads', 'Meta Retargeting', 'Budget Optimization'],
     image: '/images/team/PUSHPENDRA.png',
     linkedin: 'https://www.linkedin.com/'
+  },
+  {
+    id: 'himanshi',
+    name: 'Himanshi Goswami',
+    role: 'SOFTWARE DEVELOPER & TECH LEAD',
+    category: 'ENGINEERING',
+    highlightBadge: 'FULL-STACK ENGINEER',
+    experience: 'FAST DIRECT ENGINES',
+    bio: 'Architects high-performance booking engines, seamless PMS integrations, and responsive web experiences engineered to maximize direct reservation conversions for luxury hospitality brands.',
+    specialties: ['Direct Booking Engines', 'Full-Stack Architecture', 'Performance Optimization'],
+    image: '/images/team/HIMANSHI.png',
+    linkedin: 'https://www.linkedin.com/'
   }
 ];
 
 export default function DreamTeam({ className = '' }) {
-  // Order so that in cover-flow: Arshad (left), Yash (center), Altaf (right), Pushpendra
+  // Order for 3D cover-flow showcase
   const orderedTeam = [
-    teamMembersData[1], // Arshad
-    teamMembersData[0], // Yash
-    teamMembersData[2], // Altaf
-    teamMembersData[3], // Pushpendra
+    teamMembersData[1], // Arshad (Sr. Video Editor & Director)
+    teamMembersData[0], // Yash (Sr. Graphic Designer & Art Director)
+    teamMembersData[4], // Himanshi (Software Developer & Tech Lead)
+    teamMembersData[2], // Altaf (Business Development Manager)
+    teamMembersData[3], // Pushpendra (Project Manager & PPC Lead)
   ];
 
   const [activeTeamIndex, setActiveTeamIndex] = useState(1); // Default to Yash (index 1) in center
