@@ -235,7 +235,7 @@ export default function AboutPage({ onOpenConsultation, onNavigateHome }) {
       {/* =====================================================================
           TOP FULL-SCREEN CREATIVE HERO BANNER (100vw Edge-to-Edge, Seamless Fit)
          ===================================================================== */}
-      <section className="relative w-full overflow-hidden bg-[#99002B] m-0 p-0 border-0">
+      <section className="relative w-full overflow-hidden bg-[#99002B] pt-24 sm:pt-28 md:pt-32 pb-4 sm:pb-6 m-0 border-0">
         <img 
           src="/images/about/JJ_ELEVATE_WEBSITE_CREATIVE.svg" 
           alt="JJ Elevate Official Website Creative — Co-Founders Chandra Vardhan Singh Jodha & Yuvraj Singh Shekhawat" 
