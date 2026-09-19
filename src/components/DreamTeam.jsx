@@ -56,43 +56,16 @@ export const teamMembersData = [
     specialties: ['Google Hotel Ads', 'Meta Retargeting', 'Budget Optimization'],
     image: '/images/team/PUSHPENDRA.png',
     linkedin: 'https://www.linkedin.com/'
-  },
-  {
-    id: 'cvsingh',
-    name: 'Chandra Vardhan Singh Jodha',
-    role: 'HEAD OF SEO STRATEGY',
-    category: 'PERFORMANCE',
-    highlightBadge: 'EX-SEARCH ENGINEER',
-    experience: '50+ #1 RANKINGS',
-    bio: 'Deep technical SEO specialist. Has propelled 50+ luxury hospitality brands from Google search obscurity to #1 rankings for high-intent seasonal booking queries.',
-    specialties: ['Destination Keyword SEO', 'Google Maps GBP', 'Schema Architecture'],
-    image: '/images/team/CVSINGH.png',
-    linkedin: 'https://www.linkedin.com/'
-  },
-  {
-    id: 'yuvraj',
-    name: 'Yuvraj Singh Shekhawat',
-    role: 'CO-FOUNDER & GROWTH ARCHITECT',
-    category: 'LEADERSHIP',
-    highlightBadge: 'EX-HOSPITALITY DIRECTOR',
-    experience: '8+ YEARS LUXURY HOTEL STRATEGY',
-    bio: 'Pioneered full-funnel hospitality growth frameworks. Scaled boutique palaces, heritage Havelis, and international luxury resort chains to sustainable 75%+ direct booking volume.',
-    specialties: ['Direct Booking Engines', 'RevPAR Scaling', 'Hospitality M&A'],
-    image: '/images/team/YUVRAJSINGH.png',
-    linkedin: 'https://www.linkedin.com/in/yuvrajshekhawat/'
   }
 ];
 
 export default function DreamTeam({ className = '' }) {
-  // Order so that in cover-flow: Arshad (left), Yash (center), Altaf (right)
-  // Let team order be: Arshad, Yash, Altaf, Pushpendra, CVSingh, Yuvraj
+  // Order so that in cover-flow: Arshad (left), Yash (center), Altaf (right), Pushpendra
   const orderedTeam = [
     teamMembersData[1], // Arshad
     teamMembersData[0], // Yash
     teamMembersData[2], // Altaf
     teamMembersData[3], // Pushpendra
-    teamMembersData[4], // CVSingh
-    teamMembersData[5], // Yuvraj
   ];
 
   const [activeTeamIndex, setActiveTeamIndex] = useState(1); // Default to Yash (index 1) in center
