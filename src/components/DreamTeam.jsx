@@ -79,7 +79,7 @@ export const teamMembersData = [
     bio: 'Architects high-performance booking engines, seamless PMS integrations, and responsive web experiences engineered to maximize direct reservation conversions for luxury hospitality brands.',
     specialties: ['Direct Booking Engines', 'Full-Stack Architecture', 'Performance Optimization'],
     image: '/images/team/HIMANSHI.png',
-    linkedin: 'https://www.linkedin.com/'
+    linkedin: 'https://www.linkedin.com/in/himanshi-goswami-a444a3304'
   },
   {
     id: 'shivani',
