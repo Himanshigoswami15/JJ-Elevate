@@ -58,6 +58,18 @@ export const teamMembersData = [
     linkedin: 'https://www.linkedin.com/'
   },
   {
+    id: 'jaideep',
+    name: 'Jaideep Singh Rajpurohit',
+    role: 'GRAPHICS DESIGNER',
+    category: 'CREATIVE',
+    highlightBadge: 'BRAND & VISUAL DESIGN',
+    experience: 'CREATIVE EXCELLENCE',
+    bio: 'Crafts bespoke digital visual assets, luxury marketing collaterals, and high-impact brand identities that elevate hospitality aesthetics and captivate modern travelers.',
+    specialties: ['Brand Identity', 'Social Media Creatives', 'Marketing Collateral'],
+    image: '/images/team/JAIDEEP.png',
+    linkedin: 'https://www.linkedin.com/'
+  },
+  {
     id: 'himanshi',
     name: 'Himanshi Goswami',
     role: 'SOFTWARE DEVELOPER & TECH LEAD',
@@ -68,17 +80,31 @@ export const teamMembersData = [
     specialties: ['Direct Booking Engines', 'Full-Stack Architecture', 'Performance Optimization'],
     image: '/images/team/HIMANSHI.png',
     linkedin: 'https://www.linkedin.com/'
+  },
+  {
+    id: 'shivani',
+    name: 'Shivani Mehra',
+    role: 'SOCIAL MEDIA MANAGER',
+    category: 'MARKETING',
+    highlightBadge: 'SOCIAL MEDIA STRATEGY',
+    experience: 'VIRAL CAMPAIGNS',
+    bio: 'Orchestrates multi-channel hospitality social media presence, high-impact influencer collaborations, and vibrant community engagement that turn active travelers into loyal direct guests.',
+    specialties: ['Social Media Strategy', 'Influencer Partnerships', 'Community Engagement'],
+    image: '/images/team/SHIVANI.png',
+    linkedin: 'https://www.linkedin.com/'
   }
 ];
 
 export default function DreamTeam({ className = '' }) {
   // Order for 3D cover-flow showcase
   const orderedTeam = [
-    teamMembersData[1], // Arshad (Sr. Video Editor & Director)
-    teamMembersData[0], // Yash (Sr. Graphic Designer & Art Director)
-    teamMembersData[4], // Himanshi (Software Developer & Tech Lead)
-    teamMembersData[2], // Altaf (Business Development Manager)
-    teamMembersData[3], // Pushpendra (Project Manager & PPC Lead)
+    teamMembersData.find(m => m.id === 'arshad') || teamMembersData[1],
+    teamMembersData.find(m => m.id === 'yash') || teamMembersData[0],
+    teamMembersData.find(m => m.id === 'jaideep') || teamMembersData[0],
+    teamMembersData.find(m => m.id === 'shivani') || teamMembersData[0],
+    teamMembersData.find(m => m.id === 'himanshi') || teamMembersData[4],
+    teamMembersData.find(m => m.id === 'altaf') || teamMembersData[2],
+    teamMembersData.find(m => m.id === 'pushpendra') || teamMembersData[3],
   ];
 
   const [activeTeamIndex, setActiveTeamIndex] = useState(1); // Default to Yash (index 1) in center
