@@ -5,7 +5,7 @@ export default function AboutUs({ onOpenConsultation }) {
   return (
     <div id="about" className="scroll-mt-24 w-full">
       {/* 1. Co-Founders Creative Banner Image */}
-      <section className="w-full overflow-hidden bg-[#99002B] pt-24 sm:pt-28 md:pt-32 pb-4 sm:pb-6 m-0 border-0">
+      <section className="w-full overflow-hidden bg-[#99002B] pt-24 sm:pt-28 md:pt-32 pb-0 m-0 border-0">
         <img 
           src="/images/about/JJ_ELEVATE_WEBSITE_CREATIVE.svg" 
           alt="JJ Elevate Website Creative — Co-Founders Chandra Vardhan Singh Jodha & Yuvraj Singh Shekhawat" 
