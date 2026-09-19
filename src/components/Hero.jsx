@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowUpRight, Play, Sparkles, TrendingUp, Hotel, Compass } from 'lucide-react';
+import { ArrowUpRight, Volume2, VolumeX, Sparkles, TrendingUp, Hotel, Compass } from 'lucide-react';
 import MagneticButton from './motion/MagneticButton';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -12,9 +12,75 @@ export default function Hero({ onOpenConsultation }) {
   const line1Ref = useRef(null);
   const line2Ref = useRef(null);
   const videoFrameRef = useRef(null);
+  const videoRef = useRef(null);
   const subtextRef = useRef(null);
   const ctaRef = useRef(null);
   const statsRef = useRef(null);
+
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current.muted = false;
+      setIsMuted(false);
+      videoRef.current.play().catch(() => {});
+      setIsPlaying(true);
+    } else {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const toggleMute = (e) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    videoRef.current.muted = !videoRef.current.muted;
+    setIsMuted(videoRef.current.muted);
+  };
+
+  // Ensure music is unmuted and plays automatically
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = false;
+    video.volume = 1;
+    const playPromise = video.play();
+
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsMuted(false);
+        })
+        .catch(() => {
+          // If browser restricts unmuted autoplay before first user gesture,
+          // play with temporary mute and immediately unmute on first gesture anywhere on the page
+          video.muted = true;
+          setIsMuted(true);
+          video.play().catch(() => {});
+
+          const handleFirstInteraction = () => {
+            if (videoRef.current) {
+              videoRef.current.muted = false;
+              videoRef.current.volume = 1;
+              setIsMuted(false);
+              videoRef.current.play().catch(() => {});
+            }
+            window.removeEventListener('click', handleFirstInteraction);
+            window.removeEventListener('touchstart', handleFirstInteraction);
+            window.removeEventListener('keydown', handleFirstInteraction);
+            window.removeEventListener('scroll', handleFirstInteraction);
+          };
+
+          window.addEventListener('click', handleFirstInteraction, { once: true, passive: true });
+          window.addEventListener('touchstart', handleFirstInteraction, { once: true, passive: true });
+          window.addEventListener('keydown', handleFirstInteraction, { once: true, passive: true });
+          window.addEventListener('scroll', handleFirstInteraction, { once: true, passive: true });
+        });
+    }
+  }, []);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -111,30 +177,44 @@ export default function Hero({ onOpenConsultation }) {
         {/* Marketing Video Frame with 3D Tilt */}
         <div 
           ref={videoFrameRef} 
-          data-cursor="PLAY"
+          data-cursor={isPlaying ? "PAUSE" : "PLAY"}
+          onClick={togglePlay}
           className="mb-8 sm:mb-12 relative group w-full flex flex-col items-center will-change-transform cursor-pointer [transform-style:preserve-3d]"
         >
           <div className="resp-hero-video-frame relative bg-jj-dark overflow-hidden shadow-[0_25px_80px_-12px_rgba(0,0,0,0.15)] border-2 border-black/5 hover:shadow-[0_30px_90px_-12px_rgba(255,30,86,0.18)] transition-all duration-500 rounded-2xl group-hover:scale-[1.01]">
-            {/* HTML5 Autoplay Resort Marketing Video Loop */}
+            {/* HTML5 Autoplay JJ Elevate Portfolio Video Loop */}
             <video
+              ref={videoRef}
               autoPlay
               loop
-              muted
+              muted={isMuted}
               playsInline
+              preload="auto"
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
               className="w-full h-full object-cover"
-              poster="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80"
             >
               <source
-                src="https://assets.mixkit.co/videos/preview/mixkit-luxury-resort-swimming-pool-and-palm-trees-41487-large.mp4"
+                src="/videos/jj-elevate-portfolio.mp4"
                 type="video/mp4"
               />
             </video>
 
-            {/* Video Overlay & Play Badge */}
-            <div className="absolute inset-0 bg-gradient-to-t from-jj-dark/60 via-transparent to-transparent flex items-center justify-center">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-jj-pink text-white rounded-full flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform duration-500">
-                <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-white ml-0.5" />
-              </div>
+            {/* Top Right Sound Toggle */}
+            <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-20">
+              <button
+                type="button"
+                onClick={toggleMute}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/60 hover:bg-black/85 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all duration-300 shadow-xl active:scale-95"
+                title={isMuted ? "Unmute Audio" : "Mute Audio"}
+                aria-label={isMuted ? "Unmute Audio" : "Mute Audio"}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white/90" />
+                ) : (
+                  <Volume2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#FFDE00]" />
+                )}
+              </button>
             </div>
           </div>
         </div>

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import MagneticButton from './motion/MagneticButton';
 
-export default function CoFoundersAnimatedShowcase({ onOpenConsultation }) {
+export default function CoFoundersAnimatedShowcase({ onOpenConsultation, showBanner = true }) {
   return (
     <section className="relative w-full mb-16 sm:mb-24 overflow-hidden">
       
@@ -17,32 +17,35 @@ export default function CoFoundersAnimatedShowcase({ onOpenConsultation }) {
         Full-Screen / Edge-to-Edge Co-Founders Creative Banner (Ultra High Definition 3072px)
         Exact 1024:486 aspect ratio matching latest high quality creative, crisp typography
       */}
-      <div className="relative w-full overflow-hidden bg-[#99002B]">
-        <div className="relative w-full aspect-[1024/486]">
-          <picture className="w-full h-full block">
-            <source 
-              type="image/webp" 
-              srcSet="/images/about/co_founders_uhd.webp 3072w, /images/about/co_founders_hd.webp 2048w" 
-              sizes="100vw" 
-            />
-            <source 
-              type="image/png" 
-              srcSet="/images/about/co_founders_uhd.png 3072w" 
-              sizes="100vw" 
-            />
-            <img
-              src="/images/about/co_founders_uhd.png"
-              srcSet="/images/about/co_founders_uhd.png 3072w, /images/about/co_founders_uhd.jpg 3072w, /images/about/co_founders_hd.jpg 2048w, /images/about/co_founders.jpg 1024w"
-              sizes="100vw"
-              alt="JJ Elevate Co-Founders: Yuvraj Singh Shekhawat and Chandra Vardhan Singh Jodha"
-              className="w-full h-full object-cover block select-none pointer-events-none"
-              loading="eager"
-              fetchPriority="high"
-              decoding="sync"
-            />
-          </picture>
+      {showBanner && (
+        <div className="relative w-full overflow-hidden bg-[#99002B]">
+          <div className="relative w-full aspect-[1536/730]">
+            <picture className="w-full h-full block">
+              <source 
+                type="image/svg+xml" 
+                srcSet="/images/about/JJ_ELEVATE_WEBSITE_CREATIVE.svg" 
+              />
+              <source 
+                type="image/webp" 
+                srcSet="/images/about/co_founders_uhd.webp 3072w, /images/about/co_founders_hd.webp 2048w" 
+                sizes="100vw" 
+              />
+              <source 
+                type="image/png" 
+                srcSet="/images/about/co_founders_uhd.png 3072w" 
+                sizes="100vw" 
+              />
+              <img
+                src="/images/about/JJ_ELEVATE_WEBSITE_CREATIVE.svg"
+                alt="JJ Elevate Co-Founders: Yuvraj Singh Shekhawat and Chandra Vardhan Singh Jodha"
+                className="w-full h-full object-cover block select-none pointer-events-none"
+                loading="eager"
+                fetchPriority="high"
+              />
+            </picture>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Founder Profile Details & Booking CTA Container (Aligned with site layout) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 sm:mt-14">

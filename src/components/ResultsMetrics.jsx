@@ -116,16 +116,16 @@ export default function ResultsMetrics({ onOpenConsultation }) {
       description: 'Build iconic hotel brands through curated Instagram content, high-impact video reels, luxury influencer stays, and targeted Meta ads that make travelers want to visit.',
       images: {
         left: {
-          url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
-          caption: 'RESORT POOL & CABANAS'
+          url: '/images/social/social_pool_shoot.jpg',
+          caption: 'LUXURY RESORT CONTENT SHOOT'
         },
         center: {
-          url: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80',
-          caption: 'VILLA BALCONY SUNSET'
+          url: '/images/social/social_instagram_feed.jpg',
+          caption: 'HOTEL INSTAGRAM BIO & GRID'
         },
         right: {
-          url: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
-          caption: 'LUXURY RESORT COURTYARD'
+          url: '/images/social/social_sunset_production.jpg',
+          caption: 'SUNSET VILLA REEL PRODUCTION'
         }
       }
     },
@@ -151,16 +151,16 @@ export default function ResultsMetrics({ onOpenConsultation }) {
       description: 'Capture travelers actively searching for "luxury resorts in Rajasthan" or "boutique villas near me" with high-ROAS Google Search & Performance Max campaigns.',
       images: {
         left: {
-          url: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80',
-          caption: 'HERITAGE ROYAL SUITE'
+          url: '/images/google_ads/google_ads_palace_day.jpg',
+          caption: 'HERITAGE PALACE ESTATE & GARDENS'
         },
         center: {
-          url: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80',
-          caption: 'COASTAL RESORT VILLA'
+          url: '/images/google_ads/google_ads_metrics_dashboard.png',
+          caption: 'GOOGLE ADS PERFORMANCE CAMPAIGN DASHBOARD'
         },
         right: {
-          url: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80',
-          caption: 'SUNSET PRIVATE CABANA'
+          url: '/images/google_ads/google_ads_palace_lake_sunset.jpg',
+          caption: 'UDAIPUR LAKE PALACE AT TWILIGHT'
         }
       }
     },
@@ -186,16 +186,16 @@ export default function ResultsMetrics({ onOpenConsultation }) {
       description: 'Optimize your listings on Booking.com & Agoda while implementing rate parity strategies and direct booking incentives that turn OTA searchers into direct guests.',
       images: {
         left: {
-          url: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80',
-          caption: 'PRESIDENTIAL HOTEL SUITE'
+          url: '/images/ota/ota_palace_pool.jpg',
+          caption: 'PALACE REFLECTING POOL & COURTYARD'
         },
         center: {
-          url: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=800&q=80',
-          caption: 'REFLECTING POOL COURTYARD'
+          url: '/images/ota/ota_booking_calendar.png',
+          caption: 'DIRECT BOOKING ENGINE & CALENDAR'
         },
         right: {
-          url: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=800&q=80',
-          caption: 'SPA & RETREAT SANCTUARY'
+          url: '/images/ota/ota_presidential_suite.jpg',
+          caption: 'PRESIDENTIAL LAKE VIEW SUITE'
         }
       }
     },
@@ -221,16 +221,16 @@ export default function ResultsMetrics({ onOpenConsultation }) {
       description: 'Custom-engineered mobile web apps integrated with your PMS & booking engine. Designed around luxury editorial visuals and frictionless 2-step checkout.',
       images: {
         left: {
-          url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80',
-          caption: 'ARCHITECTURAL RESORT FACADE'
+          url: '/images/web_app/alpine_infinity_pool_day.jpg',
+          caption: 'ALPINE RESORT PANORAMA POOL'
         },
         center: {
-          url: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=800&q=80',
-          caption: 'CONTEMPORARY ATRIUM LOBBY'
+          url: '/images/web_app/hospitality_web_app_mockup.jpg',
+          caption: 'HOSPITALITY WEB APP & BOOKING SUITE'
         },
         right: {
-          url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80',
-          caption: 'OCEANFRONT RESIDENCE'
+          url: '/images/web_app/alpine_infinity_pool_sunset.jpg',
+          caption: 'SUNSET ALPINE RETREAT'
         }
       }
     }
@@ -485,7 +485,7 @@ export default function ResultsMetrics({ onOpenConsultation }) {
                 {/* Image 1 (Left Photo): Emerges first */}
                 <div
                   ref={(el) => (leftImgRefs.current[idx] = el)}
-                  className="absolute top-0 resp-service-img-side overflow-hidden border-2 border-white/90 bg-black will-change-transform z-10 pointer-events-auto cursor-pointer"
+                  className="absolute top-0 resp-service-img-side overflow-hidden border-2 border-white/90 bg-white will-change-transform z-10 pointer-events-auto cursor-pointer shadow-lg"
                   style={{ transformOrigin: 'bottom center', clipPath: 'inset(100% 0% 0% 0%)', opacity: 0 }}
                 >
                   <div className="w-full h-full transition-transform duration-300 ease-out hover:scale-[1.03] hover:rotate-0">
@@ -501,7 +501,7 @@ export default function ResultsMetrics({ onOpenConsultation }) {
                 {/* Image 2 (Center Photo): Dominant center on top */}
                 <div
                   ref={(el) => (centerImgRefs.current[idx] = el)}
-                  className="absolute top-0 resp-service-img-center overflow-hidden border-2 border-white bg-black will-change-transform z-20 pointer-events-auto cursor-pointer"
+                  className="absolute top-0 resp-service-img-center overflow-hidden border-2 border-white bg-white will-change-transform z-20 pointer-events-auto cursor-pointer shadow-xl"
                   style={{ transformOrigin: 'bottom center', clipPath: 'inset(100% 0% 0% 0%)', opacity: 0 }}
                 >
                   <div className="w-full h-full transition-transform duration-300 ease-out hover:scale-[1.03] hover:rotate-0">
@@ -517,7 +517,7 @@ export default function ResultsMetrics({ onOpenConsultation }) {
                 {/* Image 3 (Right Photo): Emerges third */}
                 <div
                   ref={(el) => (rightImgRefs.current[idx] = el)}
-                  className="absolute top-0 resp-service-img-side overflow-hidden border-2 border-white/90 bg-black will-change-transform z-10 pointer-events-auto cursor-pointer"
+                  className="absolute top-0 resp-service-img-side overflow-hidden border-2 border-white/90 bg-white will-change-transform z-10 pointer-events-auto cursor-pointer shadow-lg"
                   style={{ transformOrigin: 'bottom center', clipPath: 'inset(100% 0% 0% 0%)', opacity: 0 }}
                 >
                   <div className="w-full h-full transition-transform duration-300 ease-out hover:scale-[1.03] hover:rotate-0">

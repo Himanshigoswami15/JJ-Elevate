@@ -47,7 +47,7 @@ const servicesData = [
       "50+ #1 keyword rankings",
       "4.2x revenue from organic channel"
     ],
-    img: "https://images.unsplash.com/photo-1562577309-4932fdd64cd1?q=80&w=800&auto=format&fit=crop",
+    img: "/images/social/hotel_social_media.jpg",
     gradient: "from-jj-pink/[0.08] to-transparent",
     cta: "Start Ranking"
   },
@@ -72,7 +72,7 @@ const servicesData = [
       "62% reduction in CPL",
       "$80M+ total ad spend managed"
     ],
-    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop",
+    img: "/images/google_ads/hotel_google_ads.png",
     gradient: "from-jj-pink/[0.08] to-transparent",
     cta: "Boost Your ROAS"
   },
@@ -96,7 +96,7 @@ const servicesData = [
       "Domain authority grew from 22 to 68",
       "$12M pipeline attributed to content"
     ],
-    img: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop",
+    img: "/images/seo/hotel_seo.png",
     gradient: "from-jj-pink/[0.08] to-transparent",
     cta: "Build Your Authority"
   },
@@ -113,13 +113,13 @@ const servicesData = [
       "Tailored Strategy"
     ],
     results: [
-      "Avg. 100/100 Lighthouse score",
-      "3.4x conversion rate improvements",
-      "Sub-1s First Contentful Paint"
+      "35% reduction in OTA commissions",
+      "42% surge in direct revenue",
+      "100% rate parity protection"
     ],
-    img: "https://images.unsplash.com/photo-1555099962-4199c345e5dd?q=80&w=800&auto=format&fit=crop",
+    img: "/images/ota/hotel_ota.jpg",
     gradient: "from-jj-pink/[0.08] to-transparent",
-    cta: "Build Your Site"
+    cta: "Supercharge Your Revenue"
   },
   {
     id: "RESTAURANTSOCIALMEDIA",
@@ -141,13 +141,13 @@ const servicesData = [
       "Social Media Platform Audit & Remedial Action"
     ],
     results: [
-      "4.8% → 1.2% user drop-off rates",
-      "Avg. 230% conversion lift post-redesign",
-      "NPS score improvements of +40 points"
+      "+280% viral food reel reach & engagement",
+      "4.5x surge in weekend dine-in footfall",
+      "35K+ local foodie community followers"
     ],
-    img: "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop",
+    img: "/images/restaurant/restaurant_social_media.jpg",
     gradient: "from-jj-pink/[0.08] to-transparent",
-    cta: "Design Your UX"
+    cta: "Elevate Your Restaurant"
   },
   {
     id: "RestaurantGOOGLE",
@@ -166,13 +166,13 @@ const servicesData = [
       "Real-Time Optimization"
     ],
     results: [
-      "420% LinkedIn engagement increase",
-      "280 qualified leads/month from social",
-      "8 B2B executives hit 50K+ followers"
+      "7.8x average Google Ads ROAS",
+      "65% reduction in reservation cost-per-lead",
+      "+140% surge in high-intent table bookings"
     ],
-    img: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?q=80&w=800&auto=format&fit=crop",
+    img: "/images/restaurant/restaurant_google_ads.jpg",
     gradient: "from-jj-pink/[0.08] to-transparent",
-    cta: "Grow Your Audience"
+    cta: "Boost Restaurant ROAS"
   }
 ];
 
