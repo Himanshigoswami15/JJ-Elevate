@@ -170,7 +170,7 @@ export default function Hero({ onOpenConsultation }) {
   }, []);
 
   return (
-    <section ref={sectionRef} id="hero" className="relative pt-32 pb-28 lg:pt-40 lg:pb-36 overflow-hidden bg-jj-bg [perspective:1200px]">
+    <section ref={sectionRef} id="hero" className="relative pt-20 sm:pt-22 lg:pt-24 pb-14 sm:pb-16 overflow-hidden bg-jj-bg [perspective:1200px]">
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
         
@@ -179,7 +179,7 @@ export default function Hero({ onOpenConsultation }) {
           ref={videoFrameRef} 
           data-cursor={isPlaying ? "PAUSE" : "PLAY"}
           onClick={togglePlay}
-          className="mb-8 sm:mb-12 relative group w-full flex flex-col items-center will-change-transform cursor-pointer [transform-style:preserve-3d]"
+          className="mb-3 sm:mb-4 relative group w-full flex flex-col items-center will-change-transform cursor-pointer [transform-style:preserve-3d]"
         >
           <div className="resp-hero-video-frame relative bg-jj-dark overflow-hidden shadow-[0_25px_80px_-12px_rgba(0,0,0,0.15)] border-2 border-black/5 hover:shadow-[0_30px_90px_-12px_rgba(255,30,86,0.18)] transition-all duration-500 rounded-2xl group-hover:scale-[1.01]">
             {/* HTML5 Autoplay JJ Elevate Portfolio Video Loop */}
@@ -220,7 +220,7 @@ export default function Hero({ onOpenConsultation }) {
         </div>
 
         {/* Centered Large Headline with Clip-Path Reveal */}
-        <div ref={headlineRef} className="max-w-4xl space-y-1 mb-6 sm:mb-8 will-change-transform">
+        <div ref={headlineRef} className="max-w-4xl mb-3 sm:mb-4 will-change-transform">
           <h1 className="resp-hero-title font-body font-extrabold text-jj-dark tracking-tight">
             <span ref={line1Ref} className="block will-change-transform">
               Digital growth for
@@ -232,12 +232,12 @@ export default function Hero({ onOpenConsultation }) {
         </div>
 
         {/* Subtext */}
-        <p ref={subtextRef} className="resp-subtext text-jj-dark/70 font-normal max-w-2xl leading-relaxed mb-8 sm:mb-12">
+        <p ref={subtextRef} className="resp-subtext text-jj-dark/70 font-normal max-w-2xl leading-relaxed mb-4 sm:mb-6">
           We help hotels, luxury resorts, boutique villas, and travel brands attract high-intent guests, scale direct bookings, and build iconic digital presences.
         </p>
 
         {/* Action CTAs */}
-        <div ref={ctaRef} className="resp-btn-group flex items-center justify-center mb-12 sm:mb-16">
+        <div ref={ctaRef} className="resp-btn-group flex items-center justify-center mb-6 sm:mb-8">
           <MagneticButton
             onClick={onOpenConsultation}
             dataCursor="TALK"
@@ -258,7 +258,7 @@ export default function Hero({ onOpenConsultation }) {
         </div>
 
         {/* Micro Stats Row */}
-        <div ref={statsRef} className="pt-8 border-t border-jj-dark/8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-12 w-full max-w-2xl">
+        <div ref={statsRef} className="pt-5 sm:pt-6 border-t border-jj-dark/8 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 w-full max-w-2xl">
           <div className="flex flex-col items-center">
             <span className="font-display text-3xl sm:text-4xl font-extrabold text-jj-pink">120+</span>
             <span className="text-xs uppercase font-bold text-jj-dark/50 tracking-wider mt-1">Hotels & Resorts</span>
