@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search, Compass, ShieldCheck, CreditCard, HeartHandshake, ArrowRight } from 'lucide-react';
 import MagneticButton from './motion/MagneticButton';
+import ArrowFillButton from '@/components/ui/arrow-fill-button';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -142,16 +143,14 @@ export default function DirectBookingJourney({ onOpenConsultation }) {
             </p>
 
             <div className="pt-4 flex items-center gap-4">
-              <MagneticButton
+              <ArrowFillButton
+                btnText="Optimize This Stage"
+                size="md"
+                variant="pink"
                 onClick={onOpenConsultation}
-                dataCursor="OPTIMIZE"
-                className="px-6 py-3 bg-jj-pink text-white font-display text-sm font-bold uppercase tracking-wider hover:bg-jj-blue shadow-lg shadow-jj-pink/30"
-              >
-                <span className="flex items-center gap-2">
-                  <span>OPTIMIZE THIS STAGE</span>
-                  <ArrowRight className="w-4 h-4" />
-                </span>
-              </MagneticButton>
+                data-cursor="OPTIMIZE"
+                className="shadow-lg shadow-jj-pink/30 font-bold tracking-wider"
+              />
             </div>
           </div>
 

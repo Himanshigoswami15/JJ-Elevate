@@ -3,6 +3,7 @@ import { ArrowUpRight, Instagram, Search, Globe, Sliders, Smartphone, Palette, T
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import MagneticButton from './motion/MagneticButton';
+import ArrowFillButton from '@/components/ui/arrow-fill-button';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -182,15 +183,16 @@ function ServiceRow({ service, idx, isSelected, onToggle, onOpenConsultation, pr
             </div>
 
             <div className="lg:col-span-4 flex justify-start lg:justify-end srv-detail">
-              <MagneticButton
+              <ArrowFillButton
+                btnText="Explore Strategy"
+                size="sm"
+                variant="pink"
                 onClick={(e) => {
                   e.stopPropagation();
                   onOpenConsultation();
                 }}
-                className="px-6 py-3 bg-jj-pink text-white font-display text-xs font-bold uppercase tracking-wider hover:bg-jj-yellow hover:text-jj-dark shadow-lg shadow-jj-pink/30"
-              >
-                EXPLORE STRATEGY →
-              </MagneticButton>
+                className="shadow-lg shadow-jj-pink/30 font-bold tracking-wider"
+              />
             </div>
           </div>
         </div>

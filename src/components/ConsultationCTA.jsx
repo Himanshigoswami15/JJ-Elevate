@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight, TrendingUp, Mail, ShieldCheck } from 'lucide-react';
 import MagneticButton from './motion/MagneticButton';
+import ArrowFillButton from '@/components/ui/arrow-fill-button';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -59,28 +60,26 @@ export default function ConsultationCTA({ onOpenConsultation }) {
           Let's build a high-conversion digital growth engine that reduces OTA commissions and turns traveler attention into direct revenue.
         </p>
 
-        {/* Magnetic CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-10">
-          <MagneticButton
+        {/* Action CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mt-10">
+          <ArrowFillButton
+            btnText="Book A Free Consultation"
+            size="lg"
+            variant="pink"
+            textColor="#ffffff"
             onClick={onOpenConsultation}
-            dataCursor="TALK"
-            className="w-full sm:w-auto px-10 py-5 bg-jj-pink text-white font-display text-xl font-bold uppercase tracking-wider hover:bg-jj-yellow hover:text-jj-dark shadow-2xl shadow-jj-pink/40"
-          >
-            <span className="flex items-center gap-3">
-              <span>BOOK A FREE CONSULTATION</span>
-              <ArrowUpRight className="w-6 h-6" />
-            </span>
-          </MagneticButton>
+            data-cursor="TALK"
+            className="w-full sm:w-auto shadow-2xl shadow-jj-pink/40"
+          />
 
-          <MagneticButton
-            dataCursor="EMAIL"
-            className="w-full sm:w-auto px-8 py-5 border-2 border-white/30 text-white font-display text-lg font-bold uppercase tracking-wider hover:bg-white hover:text-jj-dark"
-          >
-            <a href="mailto:info@jjelevate.com" className="flex items-center gap-2">
-              <Mail className="w-5 h-5 text-jj-pink" />
-              <span>EMAIL INFO@JJELEVATE.COM</span>
-            </a>
-          </MagneticButton>
+          <ArrowFillButton
+            btnText="Email info@jjelevate.com"
+            href="mailto:info@jjelevate.com"
+            size="lg"
+            variant="white"
+            data-cursor="EMAIL"
+            className="w-full sm:w-auto"
+          />
         </div>
 
         {/* Guarantees */}

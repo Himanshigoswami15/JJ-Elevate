@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, ArrowUpRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ArrowFillButton from '@/components/ui/arrow-fill-button';
 
 export default function Navbar({ onOpenConsultation, currentRoute = '/', onNavigate }) {
   const [scrolled, setScrolled] = useState(false);
@@ -215,15 +216,13 @@ export default function Navbar({ onOpenConsultation, currentRoute = '/', onNavig
 
           {/* Desktop CTA Button - Opens Strategy Call Pop-up */}
           <div className="hidden lg:flex items-center gap-4">
-            <button
+            <ArrowFillButton
+              btnText="BOOK STRATEGY CALL"
+              size="sm"
+              variant="pink"
               onClick={onOpenConsultation}
-              className="group relative inline-flex items-center justify-center px-6 py-2.5 overflow-hidden font-body text-xs sm:text-[13px] font-bold tracking-wider uppercase text-white bg-jj-pink rounded-full hover:bg-jj-dark transition-all duration-300 shadow-none hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                BOOK STRATEGY CALL
-                <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </span>
-            </button>
+              className="text-xs font-bold uppercase tracking-wider"
+            />
           </div>
 
           {/* Mobile/Tablet Hamburger Button */}
@@ -324,17 +323,17 @@ export default function Navbar({ onOpenConsultation, currentRoute = '/', onNavig
               </nav>
             </div>
 
-            <div className="space-y-5 pt-6">
-              <button
+            <div className="space-y-5 pt-6 flex flex-col items-center">
+              <ArrowFillButton
+                btnText="BOOK A STRATEGY SESSION"
+                size="md"
+                variant="pink"
+                className="w-full justify-center text-xs font-bold uppercase tracking-wider"
                 onClick={() => {
                   setMobileMenuOpen(false);
                   onOpenConsultation();
                 }}
-                className="w-full py-3.5 sm:py-4 bg-jj-pink text-white font-body text-sm sm:text-base font-bold tracking-wider uppercase flex items-center justify-center gap-2 shadow-none min-h-[48px] rounded-full hover:bg-white hover:text-jj-pink transition-all cursor-pointer"
-              >
-                <span>BOOK A STRATEGY SESSION</span>
-                <ArrowUpRight className="w-5 h-5 text-jj-yellow" />
-              </button>
+              />
               <div className="text-center text-[11px] sm:text-xs text-white/50 tracking-wider pb-2">
                 © 2026 JJ ELEVATE. DIGITAL GROWTH FOR HOSPITALITY.
               </div>

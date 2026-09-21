@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Minus, ArrowRight, CheckCircle2 } from 'lucide-react';
+import ArrowFillButton from '@/components/ui/arrow-fill-button';
 
 /* =========================================================================
    PartnershipModels — Sociallyin-inspired Partnership & Investment Section
@@ -202,15 +203,15 @@ export default function PartnershipModels({ onOpenConsultation }) {
               })}
             </div>
 
-            {/* Bottom Dark CTA Button (Exact Copy from Screenshot) */}
+            {/* Bottom Dark CTA Button */}
             <div>
-              <button
+              <ArrowFillButton
+                btnText="REQUEST YOUR CUSTOM PROPOSAL"
+                size="lg"
+                variant="dark"
                 onClick={onOpenConsultation}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-4 sm:py-5 rounded-2xl bg-jj-dark text-[#FFDE00] font-display font-black text-sm sm:text-base tracking-widest uppercase shadow-[0_12px_28px_rgba(0,0,0,0.25)] hover:bg-jj-pink hover:text-white transition-all duration-300 hover:scale-105 active:scale-95"
-              >
-                <span>REQUEST YOUR CUSTOM PROPOSAL</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
+                className="w-full sm:w-auto shadow-[0_12px_28px_rgba(0,0,0,0.25)]"
+              />
             </div>
 
           </div>

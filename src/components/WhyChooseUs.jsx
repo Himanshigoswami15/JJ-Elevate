@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import ArrowFillButton from '@/components/ui/arrow-fill-button';
 
 /* =========================================================================
    WhyChooseUs — High-Impact Differentiator Section (Sociallyin-inspired)
@@ -103,14 +104,14 @@ export default function WhyChooseUs({ onOpenConsultation }) {
         </div>
 
         {/* CTA Strip */}
-        <div className="mt-14 sm:mt-18 text-center">
-          <button
+        <div className="mt-14 sm:mt-18 flex justify-center">
+          <ArrowFillButton
+            btnText="Claim Your Free Direct Booking Audit"
+            size="lg"
+            variant="pink"
             onClick={onOpenConsultation}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-6 sm:px-11 py-3.5 sm:py-5 rounded-full bg-jj-pink text-white font-display font-black text-sm sm:text-lg tracking-wider uppercase shadow-[0_12px_30px_rgba(255,30,86,0.35)] hover:bg-jj-dark hover:text-white hover:scale-105 active:scale-95 transition-all duration-300"
-          >
-            <span>Claim Your Free Direct Booking Audit</span>
-            <ArrowRight className="w-5 h-5" />
-          </button>
+            className="shadow-[0_12px_30px_rgba(255,30,86,0.35)]"
+          />
         </div>
       </div>
     </section>

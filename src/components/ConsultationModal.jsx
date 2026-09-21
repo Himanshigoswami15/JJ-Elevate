@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, Check, ShieldCheck, User, Hotel, Mail, Phone, Building2 } from 'lucide-react';
+import ArrowFillButton from '@/components/ui/arrow-fill-button';
 
 const PROPERTY_TYPES = [
   'Boutique Hotel',
@@ -243,15 +244,14 @@ export default function ConsultationModal({ isOpen, onClose }) {
                 </div>
 
                 {/* Submit Button */}
-                <div className="pt-2">
-                  <button
+                <div className="pt-2 flex justify-center">
+                  <ArrowFillButton
                     type="submit"
-                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                    className="w-full py-3.5 px-6 rounded-xl bg-jj-pink hover:bg-jj-dark text-white text-[15px] font-bold tracking-normal normal-case flex items-center justify-center gap-2 transition-all duration-200 shadow-none group cursor-pointer active:scale-[0.99]"
-                  >
-                    <span>Request Direct Audit</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </button>
+                    btnText="Request Direct Audit"
+                    size="lg"
+                    variant="pink"
+                    className="w-full justify-center text-[15px] font-bold"
+                  />
                 </div>
 
                 {/* Confidentiality subtext */}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Mail, MapPin, Phone, ArrowUpRight, Instagram, Linkedin } from 'lucide-react';
+import ArrowFillButton from '@/components/ui/arrow-fill-button';
 
 export default function Footer({ onOpenConsultation, onNavigate }) {
   const handleLink = (e, route, hash) => {
@@ -105,15 +106,13 @@ export default function Footer({ onOpenConsultation, onNavigate }) {
               </a>
             </div>
             <div className="pt-3">
-              <button
+              <ArrowFillButton
+                btnText="Book Strategy Call"
+                size="md"
+                variant="pink"
+                className="w-full justify-center text-sm font-semibold"
                 onClick={() => onNavigate ? onNavigate('/book-call', '/book-call') : onOpenConsultation()}
-                className="group w-full py-3.5 px-5 rounded-full bg-jj-pink hover:bg-white text-white hover:text-jj-dark font-body text-sm font-semibold flex items-center justify-between transition-all duration-300 shadow-sm cursor-pointer"
-              >
-                <span>Book Strategy Call</span>
-                <div className="w-7 h-7 rounded-full bg-white/20 group-hover:bg-black/5 flex items-center justify-center transition-colors">
-                  <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </div>
-              </button>
+              />
             </div>
           </div>
 

@@ -248,13 +248,6 @@ export default function Hero({ onOpenConsultation }) {
               <ArrowUpRight className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
             </span>
           </MagneticButton>
-
-          <MagneticButton
-            dataCursor="WORK"
-            className="resp-btn-action bg-transparent border-2 border-jj-dark/20 text-jj-dark font-body font-bold tracking-wider hover:bg-jj-dark hover:text-white hover:border-jj-dark rounded-full transition-all duration-500 flex items-center"
-          >
-            <span>View our work</span>
-          </MagneticButton>
         </div>
 
         {/* Micro Stats Row */}

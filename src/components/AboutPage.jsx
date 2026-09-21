@@ -233,16 +233,29 @@ export default function AboutPage({ onOpenConsultation, onNavigateHome }) {
     <div className="min-h-screen bg-[#FAF9F6] text-jj-dark font-body pt-0 pb-0 overflow-hidden relative selection:bg-jj-pink/20 selection:text-jj-dark">
 
       {/* =====================================================================
-          TOP FULL-SCREEN CREATIVE HERO BANNER (100vw Edge-to-Edge, Seamless Fit)
+          TOP FULL-SCREEN CREATIVE HERO BANNER (Responsive Mobile / Desktop Media Query)
          ===================================================================== */}
-      <section className="relative w-full overflow-hidden bg-[#99002B] pt-5 sm:pt-6 pb-0 m-0 border-0">
-        <img 
-          src="/images/about/JJ_ELEVATE_WEBSITE_CREATIVE.svg" 
-          alt="JJ Elevate Official Website Creative — Co-Founders Chandra Vardhan Singh Jodha & Yuvraj Singh Shekhawat" 
-          className="w-full h-auto block select-none pointer-events-none m-0 p-0 border-0 rounded-none"
-          loading="eager"
-          fetchPriority="high"
-        />
+      <section className="relative w-full overflow-hidden mt-[40px] pt-0 pb-0 border-0 flex items-center justify-center bg-[#99002B]">
+        <picture className="w-full h-auto flex items-center justify-center select-none pointer-events-none m-0 p-0 border-0">
+          {/* Tablet & Desktop Screen (>= 768px): JJ ELEVATE WEBSITE CREATIVE-12.svg */}
+          <source 
+            media="(min-width: 768px)" 
+            srcSet="/images/about/about-hero-desktop.svg" 
+          />
+          {/* Mobile Phone Screen (< 768px): JJ ELEVATE WEBSITE CREATIVE-13.svg */}
+          <source 
+            media="(max-width: 767px)" 
+            srcSet="/images/about/about-hero-mobile.svg" 
+          />
+          {/* Default Image */}
+          <img 
+            src="/images/about/about-hero-desktop.svg" 
+            alt="JJ Elevate Official Website Creative — Co-Founders Chandra Vardhan Singh Jodha & Yuvraj Singh Shekhawat" 
+            className="w-full h-auto max-h-[calc(100svh-40px)] sm:max-h-none object-contain mx-auto block select-none pointer-events-none m-0 p-0 border-0 rounded-none"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </picture>
       </section>
 
       {/* =====================================================================
