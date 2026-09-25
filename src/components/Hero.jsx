@@ -33,14 +33,21 @@ export default function Hero({ onOpenConsultation }) {
     }
   };
 
+  const userWantsHeroSound = useRef(true);
+
   const toggleMute = (e) => {
     e.stopPropagation();
     if (!videoRef.current) return;
-    videoRef.current.muted = !videoRef.current.muted;
-    setIsMuted(videoRef.current.muted);
+    const newMuted = !videoRef.current.muted;
+    videoRef.current.muted = newMuted;
+    setIsMuted(newMuted);
+    userWantsHeroSound.current = !newMuted;
+    if (!newMuted) {
+      window.dispatchEvent(new CustomEvent('jj-video-play-sound', { detail: { source: 'hero' } }));
+    }
   };
 
-  // Ensure music is unmuted and plays automatically
+  // Ensure music starts playing, and handle initial autoplay
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -53,33 +60,76 @@ export default function Hero({ onOpenConsultation }) {
       playPromise
         .then(() => {
           setIsMuted(false);
+          userWantsHeroSound.current = true;
         })
         .catch(() => {
           // If browser restricts unmuted autoplay before first user gesture,
-          // play with temporary mute and immediately unmute on first gesture anywhere on the page
+          // play with temporary mute and unmute on user interaction ONLY if still at hero
           video.muted = true;
           setIsMuted(true);
           video.play().catch(() => {});
 
           const handleFirstInteraction = () => {
-            if (videoRef.current) {
-              videoRef.current.muted = false;
-              videoRef.current.volume = 1;
-              setIsMuted(false);
-              videoRef.current.play().catch(() => {});
+            if (videoRef.current && userWantsHeroSound.current) {
+              const rect = videoFrameRef.current?.getBoundingClientRect();
+              const isHeroVisible = rect && rect.bottom > 120 && rect.top < window.innerHeight - 80;
+              if (isHeroVisible) {
+                videoRef.current.muted = false;
+                videoRef.current.volume = 1;
+                setIsMuted(false);
+                videoRef.current.play().catch(() => {});
+              }
             }
             window.removeEventListener('click', handleFirstInteraction);
             window.removeEventListener('touchstart', handleFirstInteraction);
             window.removeEventListener('keydown', handleFirstInteraction);
-            window.removeEventListener('scroll', handleFirstInteraction);
           };
 
           window.addEventListener('click', handleFirstInteraction, { once: true, passive: true });
           window.addEventListener('touchstart', handleFirstInteraction, { once: true, passive: true });
           window.addEventListener('keydown', handleFirstInteraction, { once: true, passive: true });
-          window.addEventListener('scroll', handleFirstInteraction, { once: true, passive: true });
         });
     }
+  }, []);
+
+  // STOP audio when scrolling down out of the hero view
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!videoRef.current || !videoFrameRef.current) return;
+      const rect = videoFrameRef.current.getBoundingClientRect();
+      const isVisible = rect.bottom > 80 && rect.top < window.innerHeight - 80;
+
+      if (!isVisible) {
+        // Scrolled down away from hero: stop/mute volume immediately
+        if (!videoRef.current.muted) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+        }
+      } else {
+        // Scrolled back up to hero: restore sound if user previously wanted sound
+        if (userWantsHeroSound.current && videoRef.current.muted) {
+          videoRef.current.muted = false;
+          setIsMuted(false);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Listen for audio from reel or other videos to prevent audio overlap
+  useEffect(() => {
+    const handleOtherVideoSound = (e) => {
+      if (e.detail?.source !== 'hero') {
+        if (videoRef.current && !videoRef.current.muted) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+        }
+      }
+    };
+    window.addEventListener('jj-video-play-sound', handleOtherVideoSound);
+    return () => window.removeEventListener('jj-video-play-sound', handleOtherVideoSound);
   }, []);
 
   useEffect(() => {

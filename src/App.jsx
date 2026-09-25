@@ -210,7 +210,10 @@ export default function App() {
           <ClientsMarquee />
 
           {/* 6. Viral Reel Showcase */}
-          <ViralReelShowcase onOpenConsultation={handleOpenConsultation} />
+          <ViralReelShowcase 
+            videoSrc="/videos/jj-elevate-reels-37.mp4"
+            onOpenConsultation={handleOpenConsultation} 
+          />
 
           {/* 7. Why Choose JJ Elevate */}
           <WhyChooseUs onOpenConsultation={handleOpenConsultation} />

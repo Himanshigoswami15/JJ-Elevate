@@ -17,8 +17,8 @@ import {
 gsap.registerPlugin(ScrollTrigger);
 
 export default function ViralReelShowcase({
-  videoSrc = 'https://assets.mixkit.co/videos/preview/mixkit-luxury-resort-swimming-pool-and-palm-trees-41487-large.mp4',
-  poster = '/images/luxury_property_reel.jpg',
+  videoSrc = '/videos/jj-elevate-reels-37.mp4',
+  poster = '',
   caption = 'Private overwater infinity pool villa at sunset. Experience bespoke luxury. #luxuryresort #maldives #directbooking #hospitality',
   author = 'JJ Elevate · Luxury Hospitality',
   views = '20M',
@@ -31,11 +31,33 @@ export default function ViralReelShowcase({
   const rightElementRef = useRef(null);
   const videoRef = useRef(null);
 
-  const [currentVideo] = useState(videoSrc);
+  const [currentVideo, setCurrentVideo] = useState(videoSrc);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(initialLikes);
+
+  // Sync state if videoSrc prop changes
+  useEffect(() => {
+    setCurrentVideo(videoSrc);
+  }, [videoSrc]);
+
+  // Autoplay video in loop smoothly
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = isMuted;
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => setIsPlaying(true))
+        .catch(() => {
+          video.muted = true;
+          setIsMuted(true);
+          video.play().catch(() => {});
+        });
+    }
+  }, [currentVideo]);
 
   // Play / Pause Toggle
   const togglePlay = () => {
@@ -49,13 +71,59 @@ export default function ViralReelShowcase({
     }
   };
 
+  const userWantsReelSound = useRef(false);
+
   // Sound Toggle
   const toggleMute = (e) => {
     e.stopPropagation();
     if (!videoRef.current) return;
-    videoRef.current.muted = !videoRef.current.muted;
-    setIsMuted(videoRef.current.muted);
+    const newMuted = !videoRef.current.muted;
+    videoRef.current.muted = newMuted;
+    setIsMuted(newMuted);
+    userWantsReelSound.current = !newMuted;
+    if (!newMuted) {
+      window.dispatchEvent(new CustomEvent('jj-video-play-sound', { detail: { source: 'reel' } }));
+    }
   };
+
+  // STOP audio when scrolling away from the reel section
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!videoRef.current || !reelCardRef.current) return;
+      const rect = reelCardRef.current.getBoundingClientRect();
+      const isVisible = rect.bottom > 80 && rect.top < window.innerHeight - 80;
+
+      if (!isVisible) {
+        if (!videoRef.current.muted) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+        }
+      } else {
+        if (userWantsReelSound.current && videoRef.current.muted) {
+          videoRef.current.muted = false;
+          setIsMuted(false);
+          window.dispatchEvent(new CustomEvent('jj-video-play-sound', { detail: { source: 'reel' } }));
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Mute reel if another video initiates sound
+  useEffect(() => {
+    const handleOtherVideoSound = (e) => {
+      if (e.detail?.source !== 'reel') {
+        if (videoRef.current && !videoRef.current.muted) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+        }
+      }
+    };
+    window.addEventListener('jj-video-play-sound', handleOtherVideoSound);
+    return () => window.removeEventListener('jj-video-play-sound', handleOtherVideoSound);
+  }, []);
 
   // Like Toggle
   const handleLike = (e) => {
@@ -247,15 +315,24 @@ export default function ViralReelShowcase({
                 <video
                   ref={videoRef}
                   key={currentVideo}
-                  src={currentVideo}
-                  poster={poster}
                   autoPlay
                   loop
                   muted={isMuted}
                   playsInline
                   preload="auto"
+                  {...(poster ? { poster } : {})}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => {
+                    if (videoRef.current) {
+                      videoRef.current.currentTime = 0;
+                      videoRef.current.play().catch(() => {});
+                    }
+                  }}
                   className="w-full h-full object-cover"
-                />
+                >
+                  <source src={currentVideo} type="video/mp4" />
+                </video>
                 {/* Subtle Cinematic Vignette for maximum text readability */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent via-55% to-black/90 pointer-events-none" />
               </div>
