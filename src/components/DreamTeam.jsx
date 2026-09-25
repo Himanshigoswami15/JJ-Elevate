@@ -18,7 +18,7 @@ export const teamMembersData = [
     experience: '100/100 LIGHTHOUSE',
     bio: 'Visual identity architect with an eye for luxury editorial layouts and high-converting ad graphics that stand out in crowded feeds and command premium room rates.',
     specialties: ['Luxury Brand Identity', 'Conversion Creatives', 'Visual Storytelling'],
-    image: '/images/team/YASH.png',
+    image: '/images/team/YASH.webp',
     linkedin: 'https://www.linkedin.com/'
   },
   {
@@ -30,7 +30,7 @@ export const teamMembersData = [
     experience: '10M+ VIRAL VIEWS',
     bio: 'Master of luxury visual pacing, sound design, and drone cinematography. Crafts fashion-grade Instagram reels and property showcases that drive instant wanderlust and direct inquiries.',
     specialties: ['Cinematic Drone Video', 'Viral Reels Pacing', 'Sound Engineering'],
-    image: '/images/team/ARSHAD.png',
+    image: '/images/team/ARSHAD.webp',
     linkedin: 'https://www.linkedin.com/'
   },
   {
@@ -42,7 +42,7 @@ export const teamMembersData = [
     experience: '180% CLIENT GROWTH',
     bio: 'Connects luxury hotel owners, resort general managers, and boutique villa operators with tailor-made growth ecosystems that transform their direct revenue bottom line.',
     specialties: ['Revenue Partnerships', 'Client Growth Funnels', 'Hospitality Tech'],
-    image: '/images/team/ALTAF.png',
+    image: '/images/team/ALTAF.webp',
     linkedin: 'https://www.linkedin.com/'
   },
   {
@@ -54,7 +54,7 @@ export const teamMembersData = [
     experience: '$80M+ MEDIA MANAGED',
     bio: 'Manages multi-crore paid search campaigns across Google Ads and Meta. Masters precise traveler retargeting to maximize direct guest acquisition and room ADR.',
     specialties: ['Google Hotel Ads', 'Meta Retargeting', 'Budget Optimization'],
-    image: '/images/team/PUSHPENDRA.png',
+    image: '/images/team/PUSHPENDRA.webp',
     linkedin: 'https://www.linkedin.com/'
   },
   {
@@ -66,7 +66,7 @@ export const teamMembersData = [
     experience: 'CREATIVE EXCELLENCE',
     bio: 'Crafts bespoke digital visual assets, luxury marketing collaterals, and high-impact brand identities that elevate hospitality aesthetics and captivate modern travelers.',
     specialties: ['Brand Identity', 'Social Media Creatives', 'Marketing Collateral'],
-    image: '/images/team/JAIDEEP.png',
+    image: '/images/team/JAIDEEP.webp',
     linkedin: 'https://www.linkedin.com/'
   },
   {
@@ -78,7 +78,7 @@ export const teamMembersData = [
     experience: 'FAST DIRECT ENGINES',
     bio: 'Architects high-performance booking engines, seamless PMS integrations, and responsive web experiences engineered to maximize direct reservation conversions for luxury hospitality brands.',
     specialties: ['Direct Booking Engines', 'Full-Stack Architecture', 'Performance Optimization'],
-    image: '/images/team/HIMANSHI.png',
+    image: '/images/team/HIMANSHI.webp',
     linkedin: 'https://www.linkedin.com/in/himanshi-goswami-a444a3304'
   },
   {
@@ -90,7 +90,7 @@ export const teamMembersData = [
     experience: 'VIRAL CAMPAIGNS',
     bio: 'Orchestrates multi-channel hospitality social media presence, high-impact influencer collaborations, and vibrant community engagement that turn active travelers into loyal direct guests.',
     specialties: ['Social Media Strategy', 'Influencer Partnerships', 'Community Engagement'],
-    image: '/images/team/SHIVANI.png',
+    image: '/images/team/SHIVANI.webp',
     linkedin: 'https://www.linkedin.com/'
   }
 ];
@@ -240,7 +240,8 @@ export default function DreamTeam({ className = '' }) {
                       src={member.image}
                       alt={member.name}
                       className="w-full h-full object-cover object-top z-0 pointer-events-none transition-transform duration-500 ease-out group-hover:scale-105"
-                      loading="lazy"
+                      loading={isCenter || Math.abs(diff) <= 1 ? "eager" : "lazy"}
+                      decoding="async"
                     />
 
                     {/* Bottom soft gradient blend */}

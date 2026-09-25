@@ -22,25 +22,29 @@ export default function CoFoundersAnimatedShowcase({ onOpenConsultation, showBan
           <div className="relative w-full aspect-[1536/730]">
             <picture className="w-full h-full block">
               <source 
-                type="image/svg+xml" 
-                srcSet="/images/about/JJ_ELEVATE_WEBSITE_CREATIVE.svg" 
-              />
-              <source 
+                media="(min-width: 768px)"
                 type="image/webp" 
-                srcSet="/images/about/co_founders_uhd.webp 3072w, /images/about/co_founders_hd.webp 2048w" 
+                srcSet="/images/about/about-hero-desktop-1536.webp 1536w, /images/about/about-hero-desktop-2048.webp 2048w, /images/about/about-hero-desktop-3072.webp 3072w" 
                 sizes="100vw" 
               />
               <source 
-                type="image/png" 
-                srcSet="/images/about/co_founders_uhd.png 3072w" 
+                media="(max-width: 767px)"
+                type="image/webp" 
+                srcSet="/images/about/about-hero-mobile.webp" 
+                sizes="100vw" 
+              />
+              <source 
+                type="image/jpeg" 
+                srcSet="/images/about/about-hero-desktop.jpg" 
                 sizes="100vw" 
               />
               <img
-                src="/images/about/JJ_ELEVATE_WEBSITE_CREATIVE.svg"
+                src="/images/about/about-hero-desktop.webp"
                 alt="JJ Elevate Co-Founders: Yuvraj Singh Shekhawat and Chandra Vardhan Singh Jodha"
                 className="w-full h-full object-cover block select-none pointer-events-none"
                 loading="eager"
                 fetchPriority="high"
+                decoding="async"
               />
             </picture>
           </div>

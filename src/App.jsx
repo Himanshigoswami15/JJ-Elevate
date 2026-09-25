@@ -46,6 +46,7 @@ export default function App() {
   const handleCloseConsultation = () => setConsultationOpen(false);
 
   const handleNavigate = (targetRoute, targetHash = '') => {
+    const isSameRoute = currentRoute === targetRoute;
     setCurrentRoute(targetRoute);
     setCurrentHash(targetHash);
 
@@ -54,9 +55,9 @@ export default function App() {
       const fullPath = targetRoute + cleanHash;
       window.history.pushState(null, '', fullPath || '/');
 
-      const scrollToTarget = () => {
-        const navbarHeight = 85;
+      const navbarHeight = 85;
 
+      const scrollToTarget = () => {
         // If a specific section hash was requested
         if (cleanHash) {
           const el = document.querySelector(cleanHash);
@@ -84,13 +85,21 @@ export default function App() {
             }
           }
         }
-
-        // Default scroll to top for standard page navigations
-        window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
-      // Slight delay to allow React route transition / rendering
-      setTimeout(scrollToTarget, 100);
+      if (cleanHash) {
+        if (isSameRoute) {
+          // Same page section scroll: smooth and direct
+          scrollToTarget();
+        } else {
+          // Switching pages to a section: instantly reset scroll to top, then smoothly scroll to section
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          setTimeout(scrollToTarget, 80);
+        }
+      } else {
+        // Switching to a page or clicking top link: immediately land at top with zero reverse-scroll lag
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      }
     }
   };
 
@@ -111,6 +120,10 @@ export default function App() {
         setCurrentRoute('/contact');
       } else {
         setCurrentRoute('/');
+      }
+
+      if (!h) {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
       }
     };
     window.addEventListener('popstate', handlePopState);
