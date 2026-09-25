@@ -104,7 +104,7 @@ export default function WhyChooseUs({ onOpenConsultation }) {
         </div>
 
         {/* CTA Strip */}
-        <div className="mt-14 sm:mt-18 flex justify-center">
+        <div className="mt-14 sm:mt-18 flex justify-center px-4 max-w-full">
           <ArrowFillButton
             btnText="Claim Your Free Direct Booking Audit"
             size="lg"
