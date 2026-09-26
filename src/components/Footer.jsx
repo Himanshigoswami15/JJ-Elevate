@@ -59,6 +59,10 @@ export default function Footer({ onOpenConsultation, onNavigate }) {
                 <div className="flex flex-col space-y-1">
                   <span className="text-[11px] text-white/50 font-bold uppercase tracking-wider">Call Us:</span>
                   <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                    <a href="tel:+917850027373" className="hover:text-jj-pink transition-colors font-bold">
+                      +91 78500 27373
+                    </a>
+                    <span className="text-white/30">•</span>
                     <a href="tel:+919462739909" className="hover:text-jj-pink transition-colors font-bold">
                       +91 94627 39909
                     </a>

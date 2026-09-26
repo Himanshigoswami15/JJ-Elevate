@@ -119,6 +119,12 @@ export default function ContactSection({ onOpenConsultation }) {
                   </p>
                   <div className="space-y-1">
                     <a 
+                      href="tel:+917850027373"
+                      className="block text-base font-bold text-[#0B0C10] hover:text-[#FF1E56] transition-colors"
+                    >
+                      +91 78500 27373
+                    </a>
+                    <a 
                       href="tel:+919462739909"
                       className="block text-base font-bold text-[#0B0C10] hover:text-[#FF1E56] transition-colors"
                     >
