@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Quote, Star } from 'lucide-react';
 import { NeuCard } from './NeuCard';
 import { NeuIconWell } from './NeuIconWell';
@@ -11,6 +11,7 @@ const TESTIMONIALS = [
     name: 'Priya Sharma',
     role: 'General Manager',
     property: 'The Oberoi Udaipur',
+    image: '/images/testimonials/ananya.jpg',
     rating: 5,
     quote: 'JJ Elevate reduced our OTA dependency from 72% to 41% in just 8 months. The direct booking revenue we recaptured paid for the entire engagement 6x over.',
     accentColor: '#6C63FF',
@@ -21,6 +22,7 @@ const TESTIMONIALS = [
     name: 'Rajan Mehta',
     role: 'Revenue Director',
     property: 'Leela Palace Bangalore',
+    image: '/images/testimonials/vikramaditya.jpg',
     rating: 5,
     quote: 'The Google Ads and Meta campaigns they built for us drove a 4.2x ROAS consistently. Our cost-per-acquisition dropped 38% in the first quarter alone.',
     accentColor: '#38B2AC',
@@ -28,13 +30,14 @@ const TESTIMONIALS = [
   },
   {
     id: 3,
-    name: 'Anjali Verma',
+    name: 'Rohit Verma',
     role: 'Marketing Head',
-    property: 'Sula Vineyards Resort',
+    property: 'Coastal Palms Resort, Goa',
+    image: '/images/testimonials/rohit.jpg',
     rating: 5,
     quote: 'Our social media went from an afterthought to our top acquisition channel. The content team truly understands the luxury hospitality audience.',
     accentColor: '#6C63FF',
-    initials: 'AV',
+    initials: 'RV',
   },
 ];
 
@@ -104,17 +107,13 @@ export const NeuTestimonialsSection = ({ onOpenConsultation }) => {
 
               {/* Author row */}
               <div className="flex items-center gap-4 pt-2 border-t border-transparent">
-                {/* Avatar — extruded puck */}
-                <div
-                  className="w-12 h-12 rounded-full bg-[#E0E5EC] flex items-center justify-center shrink-0"
-                  style={{
-                    boxShadow: '5px 5px 10px rgba(163,177,198,0.6), -5px -5px 10px rgba(255,255,255,0.7)',
-                    background: `linear-gradient(135deg, ${t.accentColor}22, ${t.accentColor}11)`,
-                  }}
-                >
-                  <span className="text-sm font-extrabold font-display" style={{ color: t.accentColor }}>
-                    {t.initials}
-                  </span>
+                {/* Avatar — Indian Portrait Image with sculpted ring */}
+                <div className="relative shrink-0">
+                  <img
+                    src={t.image}
+                    alt={t.name}
+                    className="w-12 h-12 rounded-full object-cover object-top border-2 border-white shadow-md ring-2 ring-[#6C63FF]/30"
+                  />
                 </div>
                 <div>
                   <div className="font-display text-sm font-bold text-[#3D4852]">{t.name}</div>

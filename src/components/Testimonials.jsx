@@ -37,6 +37,7 @@ const clientTestimonials = [
   {
     author: 'VIKRAMADITYA SINGH',
     organization: 'Heritage Palace Resorts, Jodhpur',
+    image: '/images/testimonials/vikramaditya.jpg',
     avatarText: 'HP',
     logoBg: 'bg-amber-50 text-amber-700 border-amber-200',
     quote:
@@ -45,6 +46,7 @@ const clientTestimonials = [
   {
     author: 'ANANYA MEHTA',
     organization: 'Villa Shanti Luxury Stays, Udaipur',
+    image: '/images/testimonials/ananya.jpg',
     avatarText: 'VS',
     logoBg: 'bg-rose-50 text-rose-700 border-rose-200',
     quote:
@@ -53,6 +55,7 @@ const clientTestimonials = [
   {
     author: 'RAJESHWAR SHARMA',
     organization: 'Desert Haven Haveli & Spa, Jaisalmer',
+    image: '/images/testimonials/rajeshwar.jpg',
     avatarText: 'DH',
     logoBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     quote:
@@ -61,6 +64,7 @@ const clientTestimonials = [
   {
     author: 'ROHIT VERMA',
     organization: 'Coastal Palms Resort, Goa',
+    image: '/images/testimonials/rohit.jpg',
     avatarText: 'CP',
     logoBg: 'bg-sky-50 text-sky-700 border-sky-200',
     quote:
@@ -95,11 +99,17 @@ export default function Testimonials({ onOpenConsultation }) {
               <div>
                 {/* Top Row: Circular Badge Left + Double Yellow Quotes Right */}
                 <div className="flex items-center justify-between gap-4 mb-8">
-                  {/* Circular Logo/Avatar Badge with light ring */}
-                  <div
-                    className={`w-16 h-16 rounded-full border-2 flex items-center justify-center font-display font-black text-xl tracking-wider shadow-inner ${testimonial.logoBg}`}
-                  >
-                    {testimonial.avatarText}
+                  {/* Circular Avatar Photo Badge with Indian client portrait */}
+                  <div className="relative shrink-0">
+                    <img
+                      src={testimonial.image}
+                      alt={testimonial.author}
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover object-top border-2 border-white shadow-lg ring-2 ring-black/10 group-hover:ring-[#FF1E56]/40 transition-all duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-jj-pink text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-md">
+                      {testimonial.avatarText}
+                    </div>
                   </div>
 
                   {/* Signature Yellow Quote Marks */}
@@ -136,11 +146,17 @@ export default function Testimonials({ onOpenConsultation }) {
               <div>
                 {/* Top Row: Circular Badge Left + Double Yellow Quotes Right */}
                 <div className="flex items-center justify-between gap-4 mb-8">
-                  {/* Circular Logo/Avatar Badge */}
-                  <div
-                    className={`w-16 h-16 rounded-full border-2 flex items-center justify-center font-display font-black text-xl tracking-wider shadow-inner ${testimonial.logoBg}`}
-                  >
-                    {testimonial.avatarText}
+                  {/* Circular Avatar Photo Badge with Indian client portrait */}
+                  <div className="relative shrink-0">
+                    <img
+                      src={testimonial.image}
+                      alt={testimonial.author}
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover object-top border-2 border-white shadow-lg ring-2 ring-black/10 group-hover:ring-[#FF1E56]/40 transition-all duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-jj-pink text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-md">
+                      {testimonial.avatarText}
+                    </div>
                   </div>
 
                   {/* Signature Yellow Quote Marks */}
