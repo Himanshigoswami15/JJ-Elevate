@@ -140,15 +140,8 @@ export default function Footer({ onOpenConsultation, onNavigate }) {
         </div>
 
         {/* Bottom Rights */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-white/50 space-y-4 sm:space-y-0">
-          <div>
-            © 2026 JJ Elevate. All rights reserved. Premium Digital Marketing Agency for Travel & Hospitality.
-          </div>
-          <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-white transition-colors">Site Map</a>
-          </div>
+        <div className="pt-8 text-center sm:text-left text-xs text-white/50">
+          © 2026 JJ Elevate. All rights reserved. Premium Digital Marketing Agency for Travel & Hospitality.
         </div>
 
       </div>
