@@ -99,17 +99,14 @@ export default function Testimonials({ onOpenConsultation }) {
               <div>
                 {/* Top Row: Circular Badge Left + Double Yellow Quotes Right */}
                 <div className="flex items-center justify-between gap-4 mb-8">
-                  {/* Circular Avatar Photo Badge with Indian client portrait */}
-                  <div className="relative shrink-0">
+                  {/* Circular Avatar Photo with Indian client portrait */}
+                  <div className="shrink-0">
                     <img
                       src={testimonial.image}
                       alt={testimonial.author}
                       className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover object-top border-2 border-white shadow-lg ring-2 ring-black/10 group-hover:ring-[#FF1E56]/40 transition-all duration-300"
                       loading="lazy"
                     />
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-jj-pink text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-md">
-                      {testimonial.avatarText}
-                    </div>
                   </div>
 
                   {/* Signature Yellow Quote Marks */}
@@ -146,17 +143,14 @@ export default function Testimonials({ onOpenConsultation }) {
               <div>
                 {/* Top Row: Circular Badge Left + Double Yellow Quotes Right */}
                 <div className="flex items-center justify-between gap-4 mb-8">
-                  {/* Circular Avatar Photo Badge with Indian client portrait */}
-                  <div className="relative shrink-0">
+                  {/* Circular Avatar Photo with Indian client portrait */}
+                  <div className="shrink-0">
                     <img
                       src={testimonial.image}
                       alt={testimonial.author}
                       className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover object-top border-2 border-white shadow-lg ring-2 ring-black/10 group-hover:ring-[#FF1E56]/40 transition-all duration-300"
                       loading="lazy"
                     />
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-jj-pink text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-md">
-                      {testimonial.avatarText}
-                    </div>
                   </div>
 
                   {/* Signature Yellow Quote Marks */}
