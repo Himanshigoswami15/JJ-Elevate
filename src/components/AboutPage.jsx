@@ -35,7 +35,6 @@ import {
 import MagneticButton from './motion/MagneticButton';
 import ClientsMarquee from './ClientsMarquee';
 import NewsletterCTA from './NewsletterCTA';
-import CoFoundersAnimatedShowcase from './CoFoundersAnimatedShowcase';
 import DreamTeam from './DreamTeam';
 
 /* =========================================================================
@@ -614,10 +613,6 @@ export default function AboutPage({ onOpenConsultation, onNavigateHome }) {
 
       </div>
 
-      {/* =====================================================================
-          4.5. CO-FOUNDERS LEADERSHIP PROFILES (Strategy Call & Bio Cards)
-         ===================================================================== */}
-      <CoFoundersAnimatedShowcase onOpenConsultation={onOpenConsultation} showBanner={false} />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
         {/* =====================================================================

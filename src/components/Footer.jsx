@@ -5,13 +5,17 @@ import ArrowFillButton from '@/components/ui/arrow-fill-button';
 export default function Footer({ onOpenConsultation, onNavigate }) {
   const handleLink = (e, route, hash) => {
     e.preventDefault();
+    if (route === '/book-call' || hash === '#book-call') {
+      if (onOpenConsultation) {
+        onOpenConsultation();
+      }
+      return;
+    }
     if (onNavigate) {
       onNavigate(route, hash);
     } else {
       if (route === '/about') {
         window.location.pathname = '/about';
-      } else if (route === '/book-call') {
-        window.location.pathname = '/book-call';
       } else {
         window.location.href = hash;
       }
@@ -50,11 +54,24 @@ export default function Footer({ onOpenConsultation, onNavigate }) {
                 <MapPin className="w-4 h-4 text-jj-pink shrink-0 mt-0.5" />
                 <span>226, Pal Rd, near 56 Bhog Sweets, opposite Samrat Ashok Udhyan, Keshavnagar, Jodhpur, Rajasthan 342001</span>
               </div>
-              <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-jj-pink shrink-0" />
-                <a href="tel:+917850027373" className="hover:text-jj-pink transition-colors font-bold min-h-[36px] flex items-center">
-                  +91 78500 27373
-                </a>
+              <div className="flex items-start gap-3">
+                <Phone className="w-4 h-4 text-jj-pink shrink-0 mt-1" />
+                <div className="flex flex-col space-y-1">
+                  <span className="text-[11px] text-white/50 font-bold uppercase tracking-wider">Call Us:</span>
+                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                    <a href="tel:+919462739909" className="hover:text-jj-pink transition-colors font-bold">
+                      +91 94627 39909
+                    </a>
+                    <span className="text-white/30">•</span>
+                    <a href="tel:+919680382257" className="hover:text-jj-pink transition-colors font-bold">
+                      +91 96803 82257
+                    </a>
+                    <span className="text-white/30">•</span>
+                    <a href="tel:+918302388436" className="hover:text-jj-pink transition-colors font-bold">
+                      +91 83023 88436
+                    </a>
+                  </div>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-jj-yellow shrink-0" />
@@ -75,8 +92,8 @@ export default function Footer({ onOpenConsultation, onNavigate }) {
               <li><a href="/services" onClick={(e) => handleLink(e, '/services', '/services')} className="hover:text-white transition-colors py-1 inline-block">Our Services</a></li>
               <li><a href="/case-studies" onClick={(e) => handleLink(e, '/case-studies', '/case-studies')} className="hover:text-white transition-colors py-1 inline-block">Case Studies</a></li>
               <li><a href="/contact" onClick={(e) => handleLink(e, '/contact', '/contact')} className="hover:text-white transition-colors py-1 inline-block">Contact & Inquiries</a></li>
-              <li><a href="/book-call" onClick={(e) => handleLink(e, '/book-call', '/book-call')} className="hover:text-white transition-colors py-1 inline-block font-bold text-jj-pink">Book Strategy Call</a></li>
-              <li><button onClick={onOpenConsultation} className="hover:text-white transition-colors text-left py-1 inline-block cursor-pointer">Quick Inquiry Modal</button></li>
+              <li><button type="button" onClick={onOpenConsultation} className="hover:text-white transition-colors py-1 inline-block font-bold text-jj-pink cursor-pointer text-left">Book Strategy Call</button></li>
+              <li><button type="button" onClick={onOpenConsultation} className="hover:text-white transition-colors text-left py-1 inline-block cursor-pointer">Quick Inquiry Modal</button></li>
             </ul>
           </div>
 
@@ -111,7 +128,7 @@ export default function Footer({ onOpenConsultation, onNavigate }) {
                 size="md"
                 variant="pink"
                 className="w-full justify-center text-sm font-semibold"
-                onClick={() => onNavigate ? onNavigate('/book-call', '/book-call') : onOpenConsultation()}
+                onClick={onOpenConsultation}
               />
             </div>
           </div>

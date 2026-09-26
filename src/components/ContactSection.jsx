@@ -107,25 +107,41 @@ export default function ContactSection({ onOpenConsultation }) {
               </a>
 
               {/* Phone Card */}
-              <a 
-                href="tel:+917850027373"
+              <div 
                 className="group flex items-start gap-4 p-5 rounded-2xl bg-white border-2 border-[#0B0C10]/15 hover:border-[#FF1E56] transition-all duration-300 block"
               >
                 <div className="w-12 h-12 rounded-xl bg-[#FAF9F6] border border-[#0B0C10]/10 flex items-center justify-center shrink-0 group-hover:bg-[#FF1E56]/10 transition-colors">
                   <Phone className="w-5 h-5 text-[#FF1E56]" />
                 </div>
-                <div>
-                  <p className="text-[11px] text-[#0B0C10]/60 font-extrabold uppercase tracking-wider">
+                <div className="flex-1">
+                  <p className="text-[11px] text-[#0B0C10]/60 font-extrabold uppercase tracking-wider mb-1.5">
                     CALL US
                   </p>
-                  <p className="text-base font-bold text-[#0B0C10] group-hover:text-[#FF1E56] transition-colors">
-                    +91 78500 27373
-                  </p>
-                  <p className="text-xs text-[#0B0C10]/55 mt-0.5">
+                  <div className="space-y-1">
+                    <a 
+                      href="tel:+919462739909"
+                      className="block text-base font-bold text-[#0B0C10] hover:text-[#FF1E56] transition-colors"
+                    >
+                      +91 94627 39909
+                    </a>
+                    <a 
+                      href="tel:+919680382257"
+                      className="block text-base font-bold text-[#0B0C10] hover:text-[#FF1E56] transition-colors"
+                    >
+                      +91 96803 82257
+                    </a>
+                    <a 
+                      href="tel:+918302388436"
+                      className="block text-base font-bold text-[#0B0C10] hover:text-[#FF1E56] transition-colors"
+                    >
+                      +91 83023 88436
+                    </a>
+                  </div>
+                  <p className="text-xs text-[#0B0C10]/55 mt-2">
                     Mon–Fri, 9AM–6PM IST
                   </p>
                 </div>
-              </a>
+              </div>
 
               {/* Address Card */}
               <div className="flex items-start gap-4 p-5 rounded-2xl bg-white border-2 border-[#0B0C10]/15">

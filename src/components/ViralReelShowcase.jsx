@@ -20,7 +20,7 @@ export default function ViralReelShowcase({
   videoSrc = '/videos/jj-elevate-reels-37.mp4',
   poster = '',
   caption = 'Private overwater infinity pool villa at sunset. Experience bespoke luxury. #luxuryresort #maldives #directbooking #hospitality',
-  author = 'JJ Elevate · Luxury Hospitality',
+  author = 'JJ Elevate',
   views = '20M',
   initialLikes = '5.1M',
   comments = '12.1K',

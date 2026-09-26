@@ -22,7 +22,14 @@ import ContactPage from './components/ContactPage';
 gsap.registerPlugin(ScrollTrigger);
 
 export default function App() {
-  const [consultationOpen, setConsultationOpen] = useState(false);
+  const [consultationOpen, setConsultationOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const p = window.location.pathname.toLowerCase();
+      const h = window.location.hash.toLowerCase();
+      if (p === '/book-call' || h === '#book-call' || h === '#consultation') return true;
+    }
+    return false;
+  });
   const [currentHash, setCurrentHash] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.location.hash || '';
@@ -43,9 +50,20 @@ export default function App() {
   });
 
   const handleOpenConsultation = () => setConsultationOpen(true);
-  const handleCloseConsultation = () => setConsultationOpen(false);
+  const handleCloseConsultation = () => {
+    setConsultationOpen(false);
+    if (typeof window !== 'undefined') {
+      if (window.location.pathname.toLowerCase() === '/book-call' || window.location.hash.toLowerCase() === '#book-call') {
+        window.history.replaceState(null, '', currentRoute && currentRoute !== '/book-call' ? currentRoute : '/');
+      }
+    }
+  };
 
   const handleNavigate = (targetRoute, targetHash = '') => {
+    if (targetRoute === '/book-call' || targetHash === '#book-call') {
+      handleOpenConsultation();
+      return;
+    }
     const isSameRoute = currentRoute === targetRoute;
     setCurrentRoute(targetRoute);
     setCurrentHash(targetHash);
@@ -110,7 +128,9 @@ export default function App() {
       setCurrentHash(h || '');
 
       const hLower = (h || '').toLowerCase();
-      if (p === '/about' || hLower === '#about') {
+      if (p === '/book-call' || hLower === '#book-call' || hLower === '#consultation') {
+        setConsultationOpen(true);
+      } else if (p === '/about' || hLower === '#about') {
         setCurrentRoute('/about');
       } else if (p === '/services' || hLower === '#services' || hLower.startsWith('#hotel') || hLower.startsWith('#restaurant') || hLower === '#services-showcase') {
         setCurrentRoute('/services');
