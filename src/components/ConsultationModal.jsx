@@ -15,6 +15,9 @@ const PROPERTY_TYPES = [
 
 export default function ConsultationModal({ isOpen, onClose }) {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     hotelName: '',
@@ -24,15 +27,62 @@ export default function ConsultationModal({ isOpen, onClose }) {
     otherType: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setTimeout(() => {
-        setSubmitted(false);
-        onClose();
-      }, 3500);
-    }, 400);
+    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+      setErrorMessage('Please fill in your name, work email, and phone number.');
+      return;
+    }
+
+    setErrorMessage('');
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formType: 'Strategy Call / Growth Audit',
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          company: formData.hotelName.trim(),
+          service: formData.propertyType === 'Other' ? (formData.otherType.trim() || 'Other Property') : formData.propertyType,
+          message: `Direct Growth Audit Request for ${formData.hotelName.trim() || 'Hospitality Business'}. Property Type: ${formData.propertyType === 'Other' ? (formData.otherType.trim() || 'Other') : formData.propertyType}. Customer phone: ${formData.phone.trim()}`,
+          sourceUrl: typeof window !== 'undefined' ? window.location.href : 'https://www.jjelevate.com/',
+          _hp: honeypot
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok && data.success) {
+        setSubmitted(true);
+        setFormData({
+          name: '',
+          hotelName: '',
+          email: '',
+          phone: '',
+          propertyType: 'Boutique Hotel',
+          otherType: ''
+        });
+        setHoneypot('');
+        setTimeout(() => {
+          setTimeout(() => {
+            setSubmitted(false);
+            onClose();
+          }, 4000);
+        }, 400);
+      } else {
+        setErrorMessage(data.error || 'Something went wrong. Please try again or contact us directly.');
+      }
+    } catch {
+      setErrorMessage('Something went wrong. Please try again or contact us directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -80,14 +130,9 @@ export default function ConsultationModal({ isOpen, onClose }) {
               <h3 className="font-outfit text-2xl font-bold uppercase text-jj-dark">
                 WE'LL BE IN TOUCH SHORTLY
               </h3>
-              <p className="text-xs sm:text-sm text-jj-dark/75 max-w-xs mx-auto leading-relaxed font-body">
-                Thank you, <strong className="text-jj-dark">{formData.name}</strong>. Our senior hospitality growth director is reviewing <strong className="text-jj-pink">{formData.hotelName}</strong> and will reach out within 2 hours.
+              <p className="text-xs sm:text-sm text-jj-dark/85 max-w-sm mx-auto leading-relaxed font-body">
+                Thank you! Your enquiry has been submitted successfully. We will contact you soon.
               </p>
-              <div className="pt-2">
-                <span className="text-[11px] font-mono text-jj-dark/50">
-                  Confirmation dispatched to {formData.email}
-                </span>
-              </div>
             </motion.div>
           ) : (
             <div className="relative z-10 space-y-5">
@@ -109,6 +154,24 @@ export default function ConsultationModal({ isOpen, onClose }) {
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
+                
+                {/* Honeypot field for spam bot protection */}
+                <input
+                  type="text"
+                  name="_hp"
+                  tabIndex="-1"
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  style={{ display: 'none', position: 'absolute', left: '-9999px' }}
+                  aria-hidden="true"
+                />
+
+                {errorMessage && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">
+                    {errorMessage}
+                  </div>
+                )}
                 {/* 1. Property / Business Type Pills */}
                 <div>
                   <label 
@@ -247,10 +310,11 @@ export default function ConsultationModal({ isOpen, onClose }) {
                 <div className="pt-2 flex justify-center">
                   <ArrowFillButton
                     type="submit"
-                    btnText="Request Direct Audit"
+                    disabled={isSubmitting}
+                    btnText={isSubmitting ? "Sending..." : "Request Direct Audit"}
                     size="lg"
                     variant="pink"
-                    className="w-full justify-center text-[15px] font-bold"
+                    className="w-full justify-center text-[15px] font-bold disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                 </div>
 

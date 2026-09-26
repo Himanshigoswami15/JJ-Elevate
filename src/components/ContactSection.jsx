@@ -26,6 +26,7 @@ export default function ContactSection({ onOpenConsultation }) {
     message: ''
   });
 
+  const [honeypot, setHoneypot] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -49,19 +50,56 @@ export default function ContactSection({ onOpenConsultation }) {
     '₹10,00,000+'
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) {
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
       setErrorMessage('Please fill in all required fields (Name, Email, Message).');
       return;
     }
+
     setErrorMessage('');
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formType: 'Contact Brief',
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          company: formData.company.trim(),
+          service: formData.service || 'Not specified',
+          budget: formData.budget,
+          message: formData.message.trim(),
+          sourceUrl: typeof window !== 'undefined' ? window.location.href : 'https://www.jjelevate.com/contact',
+          _hp: honeypot
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok && data.success) {
+        setSubmitted(true);
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          service: '',
+          budget: '₹25,000 – ₹1,00,000',
+          message: ''
+        });
+        setHoneypot('');
+      } else {
+        setErrorMessage(data.error || 'Something went wrong. Please try again or contact us directly.');
+      }
+    } catch {
+      setErrorMessage('Something went wrong. Please try again or contact us directly.');
+    } finally {
       setIsSubmitting(false);
-      setSubmitted(true);
-    }, 600);
+    }
   };
 
   return (
@@ -244,7 +282,7 @@ export default function ContactSection({ onOpenConsultation }) {
                       MESSAGE SENT.
                     </h3>
                     <p className="text-sm sm:text-base text-[#0B0C10]/75 max-w-md mx-auto leading-relaxed">
-                      Thank you, <span className="font-bold text-[#0B0C10]">{formData.name}</span>. Our senior growth strategist is reviewing your brief and will respond within 2 business hours.
+                      Thank you! Your enquiry has been submitted successfully. We will contact you soon.
                     </p>
                   </div>
 
@@ -271,6 +309,18 @@ export default function ContactSection({ onOpenConsultation }) {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   
+                  {/* Honeypot field for spam bot protection */}
+                  <input
+                    type="text"
+                    name="_hp"
+                    tabIndex="-1"
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    style={{ display: 'none', position: 'absolute', left: '-9999px' }}
+                    aria-hidden="true"
+                  />
+
                   <div>
                     <h3 className="font-display text-2xl font-extrabold uppercase tracking-tight text-[#0B0C10]">
                       SEND US A BRIEF
@@ -413,10 +463,10 @@ export default function ContactSection({ onOpenConsultation }) {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full bg-[#FF1E56] hover:bg-[#0B0C10] text-white font-extrabold text-xs uppercase tracking-widest py-4 px-8 rounded-full transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer group"
+                      className="w-full bg-[#FF1E56] hover:bg-[#0B0C10] text-white font-extrabold text-xs uppercase tracking-widest py-4 px-8 rounded-full transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer group disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       <Send className="w-4 h-4 text-white" />
-                      <span>{isSubmitting ? 'SENDING BRIEF...' : 'SEND MESSAGE'}</span>
+                      <span>{isSubmitting ? 'Sending...' : 'SEND MESSAGE'}</span>
                       <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
                     </button>
                     <p className="text-[11px] text-[#0B0C10]/50 text-center mt-2.5">

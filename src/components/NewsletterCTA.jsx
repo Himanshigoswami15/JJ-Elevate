@@ -4,17 +4,50 @@ import { CheckCircle2 } from 'lucide-react';
 
 export default function NewsletterCTA() {
   const [email, setEmail] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
       setError('Please enter a valid email address.');
       return;
     }
     setError('');
-    setSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formType: 'Newsletter Subscription',
+          email: email.trim(),
+          name: 'Newsletter Subscriber',
+          message: 'Subscribed to JJ Elevate social growth newsletter via homepage CTA.',
+          sourceUrl: typeof window !== 'undefined' ? window.location.href : 'https://www.jjelevate.com/',
+          _hp: honeypot
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok && data.success) {
+        setSubmitted(true);
+        setEmail('');
+        setHoneypot('');
+      } else {
+        setError(data.error || 'Something went wrong. Please try again or contact us directly.');
+      }
+    } catch {
+      setError('Something went wrong. Please try again or contact us directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -48,6 +81,18 @@ export default function NewsletterCTA() {
                       exit={{ opacity: 0 }}
                       className="space-y-1.5"
                     >
+                      {/* Honeypot field */}
+                      <input
+                        type="text"
+                        name="_hp"
+                        tabIndex="-1"
+                        autoComplete="off"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
+                        style={{ display: 'none', position: 'absolute', left: '-9999px' }}
+                        aria-hidden="true"
+                      />
+
                       <label
                         htmlFor="newsletter-email-input"
                         className="block text-xs sm:text-sm font-semibold text-[#282A2C]"
@@ -70,9 +115,10 @@ export default function NewsletterCTA() {
                         />
                         <button
                           type="submit"
-                          className="resp-form-btn bg-[#000000] hover:bg-[#1A1A1A] active:scale-[0.99] text-[#F8D53A] font-display font-black uppercase text-xs sm:text-sm tracking-wider px-6 sm:px-7 py-3.5 transition-all duration-200 flex items-center shrink-0 cursor-pointer shadow-md"
+                          disabled={isSubmitting}
+                          className="resp-form-btn bg-[#000000] hover:bg-[#1A1A1A] active:scale-[0.99] text-[#F8D53A] font-display font-black uppercase text-xs sm:text-sm tracking-wider px-6 sm:px-7 py-3.5 transition-all duration-200 flex items-center shrink-0 cursor-pointer shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                          <span>SUBSCRIBE TO NEWSLETTER</span>
+                          <span>{isSubmitting ? 'SUBSCRIBING...' : 'SUBSCRIBE TO NEWSLETTER'}</span>
                         </button>
                       </div>
 
