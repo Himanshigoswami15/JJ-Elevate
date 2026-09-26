@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, ArrowUpRight, ChevronDown, Phone } from 'lucide-react';
+import { Menu, X, ArrowUpRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ArrowFillButton from '@/components/ui/arrow-fill-button';
 
@@ -214,48 +214,8 @@ export default function Navbar({ onOpenConsultation, currentRoute = '/', onNavig
             })}
           </nav>
 
-          {/* Desktop Call Us & CTA */}
-          <div className="hidden lg:flex items-center gap-3">
-            <div className="relative group">
-              <button 
-                type="button"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-jj-dark hover:text-jj-pink hover:bg-black/5 transition-all border border-black/10 cursor-pointer"
-              >
-                <Phone className="w-3.5 h-3.5 text-jj-pink" />
-                <span>Call Us</span>
-                <ChevronDown className="w-3 h-3 text-jj-dark/50 group-hover:rotate-180 transition-transform" />
-              </button>
-
-              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-2.5 py-1">
-                  Direct Inquiries
-                </div>
-                <div className="space-y-0.5">
-                  <a
-                    href="tel:+919462739909"
-                    className="flex items-center justify-between px-2.5 py-1.5 text-xs font-semibold text-jj-dark hover:bg-jj-pink/10 hover:text-jj-pink rounded-xl transition-colors"
-                  >
-                    <span>+91 94627 39909</span>
-                    <Phone className="w-3 h-3 text-jj-pink opacity-70" />
-                  </a>
-                  <a
-                    href="tel:+919680382257"
-                    className="flex items-center justify-between px-2.5 py-1.5 text-xs font-semibold text-jj-dark hover:bg-jj-pink/10 hover:text-jj-pink rounded-xl transition-colors"
-                  >
-                    <span>+91 96803 82257</span>
-                    <Phone className="w-3 h-3 text-jj-pink opacity-70" />
-                  </a>
-                  <a
-                    href="tel:+918302388436"
-                    className="flex items-center justify-between px-2.5 py-1.5 text-xs font-semibold text-jj-dark hover:bg-jj-pink/10 hover:text-jj-pink rounded-xl transition-colors"
-                  >
-                    <span>+91 83023 88436</span>
-                    <Phone className="w-3 h-3 text-jj-pink opacity-70" />
-                  </a>
-                </div>
-              </div>
-            </div>
-
+          {/* Desktop CTA Button - Opens Strategy Call Pop-up */}
+          <div className="hidden lg:flex items-center gap-4">
             <ArrowFillButton
               btnText="BOOK STRATEGY CALL"
               size="sm"
@@ -363,7 +323,7 @@ export default function Navbar({ onOpenConsultation, currentRoute = '/', onNavig
               </nav>
             </div>
 
-            <div className="space-y-4 pt-6 flex flex-col items-center w-full">
+            <div className="space-y-5 pt-6 flex flex-col items-center">
               <ArrowFillButton
                 btnText="BOOK A STRATEGY SESSION"
                 size="md"
@@ -374,23 +334,6 @@ export default function Navbar({ onOpenConsultation, currentRoute = '/', onNavig
                   onOpenConsultation();
                 }}
               />
-              <div className="w-full pt-3 pb-1 border-t border-white/10 text-center">
-                <p className="text-[10px] text-white/50 uppercase tracking-widest font-extrabold mb-2">CALL US</p>
-                <div className="flex flex-col gap-1.5 text-xs text-white/90">
-                  <a href="tel:+919462739909" className="hover:text-jj-pink font-bold flex items-center justify-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-jj-pink" />
-                    <span>+91 94627 39909</span>
-                  </a>
-                  <a href="tel:+919680382257" className="hover:text-jj-pink font-bold flex items-center justify-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-jj-pink" />
-                    <span>+91 96803 82257</span>
-                  </a>
-                  <a href="tel:+918302388436" className="hover:text-jj-pink font-bold flex items-center justify-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-jj-pink" />
-                    <span>+91 83023 88436</span>
-                  </a>
-                </div>
-              </div>
               <div className="text-center text-[11px] sm:text-xs text-white/50 tracking-wider pb-2">
                 © 2026 JJ ELEVATE. DIGITAL GROWTH FOR HOSPITALITY.
               </div>
