@@ -13,6 +13,7 @@ import {
   Plane,
   Building2
 } from 'lucide-react';
+import { useAdminData } from '../context/AdminDataContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -25,22 +26,41 @@ export default function ViralReelShowcase({
   initialLikes = '5.1M',
   comments = '12.1K',
 }) {
+  let adminReels = null;
+  try {
+    const adminCtx = useAdminData();
+    adminReels = adminCtx?.data?.reels;
+  } catch {
+    // context fallback
+  }
+
+  const activeVideo = adminReels?.videoUrl || videoSrc;
+  const activeCaption = adminReels?.caption || caption;
+  const activeAuthor = adminReels?.author || author;
+  const activeViews = adminReels?.views || views;
+  const activeLikes = adminReels?.likes || initialLikes;
+  const activeComments = adminReels?.comments || comments;
+
   const sectionRef = useRef(null);
   const reelCardRef = useRef(null);
   const leftElementRef = useRef(null);
   const rightElementRef = useRef(null);
   const videoRef = useRef(null);
 
-  const [currentVideo, setCurrentVideo] = useState(videoSrc);
+  const [currentVideo, setCurrentVideo] = useState(activeVideo);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(initialLikes);
+  const [likeCount, setLikeCount] = useState(activeLikes);
 
-  // Sync state if videoSrc prop changes
+  // Sync state if activeVideo changes
   useEffect(() => {
-    setCurrentVideo(videoSrc);
-  }, [videoSrc]);
+    setCurrentVideo(activeVideo);
+  }, [activeVideo]);
+
+  useEffect(() => {
+    setLikeCount(activeLikes);
+  }, [activeLikes]);
 
   // Autoplay video in loop smoothly
   useEffect(() => {
@@ -364,7 +384,7 @@ export default function ViralReelShowcase({
                     <Eye className="w-4 h-4" />
                   </div>
                   <span className="text-[10px] font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
-                    {views}
+                    {activeViews}
                   </span>
                 </div>
 
@@ -398,7 +418,7 @@ export default function ViralReelShowcase({
                     <MessageCircle className="w-4 h-4" />
                   </div>
                   <span className="text-[10px] font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
-                    {comments}
+                    {activeComments}
                   </span>
                 </div>
 
@@ -415,12 +435,12 @@ export default function ViralReelShowcase({
               <div className="absolute bottom-0 left-0 right-0 z-30 pb-3.5 px-4 pr-14 text-left">
                 {/* Property / Agency Handle */}
                 <p className="text-xs font-extrabold text-white tracking-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] mb-0.5">
-                  {author}
+                  {activeAuthor}
                 </p>
 
                 {/* Caption */}
                 <p className="text-[11px] text-white/90 leading-snug drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] line-clamp-2">
-                  {caption}
+                  {activeCaption}
                 </p>
               </div>
 

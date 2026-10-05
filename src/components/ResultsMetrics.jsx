@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowUpRight, Instagram, Search, Sliders, Smartphone } from 'lucide-react';
+import { ArrowUpRight, Instagram, Search, Sliders, Smartphone, Building2, Globe } from 'lucide-react';
 import MagneticButton from './motion/MagneticButton';
+import { useAdminData } from '../context/AdminDataContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -82,6 +83,15 @@ const serviceConfigs = [
   }
 ];
 
+const ICON_MAP = {
+  Instagram,
+  Search,
+  Sliders,
+  Smartphone,
+  Building2,
+  Globe
+};
+
 export default function ResultsMetrics({ onOpenConsultation }) {
   const sectionRef = useRef(null);
   const headingContainerRef = useRef(null);
@@ -93,7 +103,17 @@ export default function ResultsMetrics({ onOpenConsultation }) {
 
   const [activeTab, setActiveTab] = useState(0);
 
-  const servicesList = [
+  let adminServices = null;
+  let adminHeader = null;
+  try {
+    const adminCtx = useAdminData();
+    adminServices = adminCtx?.data?.services;
+    adminHeader = adminCtx?.data?.growthServicesHeader;
+  } catch {
+    // context fallback
+  }
+
+  const rawServices = (adminServices && adminServices.length > 0) ? adminServices : [
     {
       id: '01',
       title: 'Hotel Social Media & Influencer Marketing',
@@ -105,7 +125,7 @@ export default function ResultsMetrics({ onOpenConsultation }) {
       borderColor: 'border-[#0B0C10]/15',
       badgeBg: 'bg-[#0B0C10] text-white',
       accentColor: 'text-[#FF1E56]',
-      icon: Instagram,
+      iconName: 'Instagram',
       metricHighlight: '+280% ENGAGEMENT SURGE',
       metricsTable: [
         { label: 'MEDIA FORMAT', value: '4K REELS & INFLUENCERS' },
@@ -115,126 +135,46 @@ export default function ResultsMetrics({ onOpenConsultation }) {
       ],
       description: 'Build iconic hotel brands through curated Instagram content, high-impact video reels, luxury influencer stays, and targeted Meta ads that make travelers want to visit.',
       images: {
-        left: {
-          url: '/images/social/social_pool_shoot.jpg',
-          caption: 'LUXURY RESORT CONTENT SHOOT'
-        },
-        center: {
-          url: '/images/social/social_instagram_feed.jpg',
-          caption: 'HOTEL INSTAGRAM BIO & GRID'
-        },
-        right: {
-          url: '/images/social/social_sunset_production.jpg',
-          caption: 'SUNSET VILLA REEL PRODUCTION'
-        }
-      }
-    },
-    {
-      id: '02',
-      title: 'High-Intent Google Ads & Performance Search',
-      category: 'PERFORMANCE ADS',
-      tabLabel: '02 GOOGLE SEARCH',
-      bgColor: 'bg-[#E6E1F5]',
-      textColor: 'text-[#1D1B2A]',
-      subTextColor: 'text-[#1D1B2A]/80',
-      borderColor: 'border-[#1D1B2A]/15',
-      badgeBg: 'bg-[#FF1E56] text-white',
-      accentColor: 'text-[#FF1E56]',
-      icon: Search,
-      metricHighlight: '4.8X AVERAGE SEARCH ROAS',
-      metricsTable: [
-        { label: 'SEARCH INTENT', value: 'DESTINATION QUERY ADS' },
-        { label: 'RETURN ON ADS', value: '4.8X DIRECT AD REVENUE' },
-        { label: 'CAMPAIGNS', value: 'GOOGLE SEARCH & HOTEL ADS' },
-        { label: 'CONVERSION', value: 'HIGH-ROAS PMAX' }
-      ],
-      description: 'Capture travelers actively searching for "luxury resorts in Rajasthan" or "boutique villas near me" with high-ROAS Google Search & Performance Max campaigns.',
-      images: {
-        left: {
-          url: '/images/google_ads/google_ads_palace_day.jpg',
-          caption: 'HERITAGE PALACE ESTATE & GARDENS'
-        },
-        center: {
-          url: '/images/google_ads/google_ads_metrics_dashboard.png',
-          caption: 'GOOGLE ADS PERFORMANCE CAMPAIGN DASHBOARD'
-        },
-        right: {
-          url: '/images/google_ads/google_ads_palace_lake_sunset.jpg',
-          caption: 'UDAIPUR LAKE PALACE AT TWILIGHT'
-        }
-      }
-    },
-    {
-      id: '03',
-      title: 'OTA Optimization & 0% Commission Engine',
-      category: 'COMMISSION FREE',
-      tabLabel: '03 OTA STRATEGY',
-      bgColor: 'bg-[#F2ECE1]',
-      textColor: 'text-[#0B0C10]',
-      subTextColor: 'text-[#0B0C10]/80',
-      borderColor: 'border-[#0B0C10]/15',
-      badgeBg: 'bg-[#0B0C10] text-white',
-      accentColor: 'text-jj-pink',
-      icon: Sliders,
-      metricHighlight: '35% OTA DEPENDENCY DROP',
-      metricsTable: [
-        { label: 'DIRECT ENGINE', value: '0% COMMISSION PER STAY' },
-        { label: 'OTA SAVINGS', value: '35% REDUCTION IN FEES' },
-        { label: 'RATE PARITY', value: '100% PROTECTED' },
-        { label: 'GUEST DATA', value: '100% HOTEL OWNERSHIP' }
-      ],
-      description: 'Optimize your listings on Booking.com & Agoda while implementing rate parity strategies and direct booking incentives that turn OTA searchers into direct guests.',
-      images: {
-        left: {
-          url: '/images/ota/ota_palace_pool.jpg',
-          caption: 'PALACE REFLECTING POOL & COURTYARD'
-        },
-        center: {
-          url: '/images/ota/ota_booking_calendar.png',
-          caption: 'DIRECT BOOKING ENGINE & CALENDAR'
-        },
-        right: {
-          url: '/images/ota/ota_presidential_suite.jpg',
-          caption: 'PRESIDENTIAL LAKE VIEW SUITE'
-        }
-      }
-    },
-    {
-      id: '04',
-      title: 'Hospitality Web App & SEO Dominance',
-      category: 'DIGITAL ARCHITECTURE',
-      tabLabel: '04 WEB APP & SEO',
-      bgColor: 'bg-[#0B0C10]',
-      textColor: 'text-white',
-      subTextColor: 'text-white/80',
-      borderColor: 'border-white/15',
-      badgeBg: 'bg-[#FF1E56] text-white',
-      accentColor: 'text-[#FF1E56]',
-      icon: Smartphone,
-      metricHighlight: '+65% MOBILE CONVERSIONS',
-      metricsTable: [
-        { label: 'PAGE SPEED', value: '0.8s ULTRA FAST' },
-        { label: 'MOBILE CHECKOUT', value: '+65% COMPLETION' },
-        { label: 'SEO RANKINGS', value: '#1 DESTINATION KEYWORDS' },
-        { label: 'PMS INTEGRATION', value: 'SEAMLESS REAL-TIME' }
-      ],
-      description: 'Custom-engineered mobile web apps integrated with your PMS & booking engine. Designed around luxury editorial visuals and frictionless 2-step checkout.',
-      images: {
-        left: {
-          url: '/images/web_app/alpine_infinity_pool_day.jpg',
-          caption: 'ALPINE RESORT PANORAMA POOL'
-        },
-        center: {
-          url: '/images/web_app/hospitality_web_app_mockup.jpg',
-          caption: 'HOSPITALITY WEB APP & BOOKING SUITE'
-        },
-        right: {
-          url: '/images/web_app/alpine_infinity_pool_sunset.jpg',
-          caption: 'SUNSET ALPINE RETREAT'
-        }
+        left: { url: '/images/social/social_pool_shoot.jpg', caption: 'LUXURY RESORT CONTENT SHOOT' },
+        center: { url: '/images/social/social_instagram_feed.jpg', caption: 'HOTEL INSTAGRAM BIO & GRID' },
+        right: { url: '/images/social/social_sunset_production.jpg', caption: 'SUNSET VILLA REEL PRODUCTION' }
       }
     }
   ];
+
+  const servicesList = rawServices.map((srv, idx) => ({
+    id: srv.id || `0${idx + 1}`,
+    title: srv.title,
+    category: srv.category || 'BRAND AWARENESS',
+    tabLabel: srv.tabLabel || `0${idx + 1} ${srv.title?.slice(0, 16).toUpperCase()}`,
+    bgColor: srv.bgColor || (idx % 2 === 0 ? 'bg-[#EFECE6]' : 'bg-[#E6E1F5]'),
+    textColor: srv.textColor || 'text-[#0B0C10]',
+    subTextColor: srv.subTextColor || 'text-[#0B0C10]/80',
+    borderColor: srv.borderColor || 'border-[#0B0C10]/15',
+    badgeBg: srv.badgeBg || (idx % 2 === 0 ? 'bg-[#0B0C10] text-white' : 'bg-[#FF1E56] text-white'),
+    accentColor: srv.accentColor || 'text-[#FF1E56]',
+    icon: (srv.iconName && ICON_MAP[srv.iconName]) || (idx === 0 ? Instagram : idx === 1 ? Search : idx === 2 ? Sliders : Smartphone),
+    metricHighlight: srv.metricHighlight || '+280% SURGE',
+    metricsTable: srv.metricsTable && srv.metricsTable.length > 0 ? srv.metricsTable : [
+      { label: 'MEDIA FORMAT', value: '4K REELS & INFLUENCERS' },
+      { label: 'DELIVERABLE', value: 'HOSPITALITY GROWTH SUITE' }
+    ],
+    description: srv.description,
+    images: {
+      left: {
+        url: srv.images?.left?.url || '/images/social/social_pool_shoot.jpg',
+        caption: srv.images?.left?.caption || 'LUXURY RESORT CONTENT SHOOT'
+      },
+      center: {
+        url: srv.images?.center?.url || '/images/social/social_instagram_feed.jpg',
+        caption: srv.images?.center?.caption || 'HOTEL INSTAGRAM BIO & GRID'
+      },
+      right: {
+        url: srv.images?.right?.url || '/images/social/social_sunset_production.jpg',
+        caption: srv.images?.right?.caption || 'SUNSET VILLA REEL PRODUCTION'
+      }
+    }
+  }));
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -451,12 +391,12 @@ export default function ResultsMetrics({ onOpenConsultation }) {
                 </span>
               </div>
               <h2 className="clamp-heading font-display font-extrabold text-jj-dark tracking-tight uppercase leading-[0.92]">
-                <span className="block heading-line-1 will-change-transform">GROWTH SERVICES FOR</span>
-                <span className="block heading-line-2 text-jj-pink will-change-transform">HOSPITALITY BRANDS.</span>
+                <span className="block heading-line-1 will-change-transform">{adminHeader?.headlineLine1 || "GROWTH SERVICES FOR"}</span>
+                <span className="block heading-line-2 text-jj-pink will-change-transform">{adminHeader?.headlineLine2 || "HOSPITALITY BRANDS."}</span>
               </h2>
             </div>
             <p className="heading-subtext text-jj-dark/80 max-w-md text-base mt-4 lg:mt-0 font-medium">
-              Explore our specialized digital marketing services built specifically for hotels, luxury resorts, and boutique stays.
+              {adminHeader?.subtext || "Explore our specialized digital marketing services built specifically for hotels, luxury resorts, and boutique stays."}
             </p>
           </div>
         </div>

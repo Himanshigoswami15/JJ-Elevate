@@ -3,10 +3,18 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight, Volume2, VolumeX, Sparkles, TrendingUp, Hotel, Compass } from 'lucide-react';
 import MagneticButton from './motion/MagneticButton';
+import { useAdminData } from '../context/AdminDataContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Hero({ onOpenConsultation }) {
+  let heroData = null;
+  try {
+    const adminCtx = useAdminData();
+    heroData = adminCtx?.data?.hero;
+  } catch {
+    // fallback if outside provider
+  }
   const sectionRef = useRef(null);
   const headlineRef = useRef(null);
   const line1Ref = useRef(null);
@@ -245,7 +253,7 @@ export default function Hero({ onOpenConsultation }) {
               className="w-full h-full object-cover"
             >
               <source
-                src="/videos/jj-elevate-portfolio.mp4"
+                src={heroData?.videoUrl || "/videos/jj-elevate-portfolio.mp4"}
                 type="video/mp4"
               />
             </video>
@@ -273,17 +281,17 @@ export default function Hero({ onOpenConsultation }) {
         <div ref={headlineRef} className="max-w-4xl mb-3 sm:mb-4 will-change-transform">
           <h1 className="resp-hero-title font-body font-extrabold text-jj-dark tracking-tight">
             <span ref={line1Ref} className="block will-change-transform">
-              Digital growth for
+              {heroData?.headlineLine1 || "Digital growth for"}
             </span>
             <span ref={line2Ref} className="block will-change-transform">
-              <span className="text-jj-pink">noteworthy</span> hospitality brands
+              <span className="text-jj-pink">{heroData?.headlineAccent || "noteworthy"}</span> {heroData?.headlineLine2 || "hospitality brands"}
             </span>
           </h1>
         </div>
 
         {/* Subtext */}
         <p ref={subtextRef} className="resp-subtext text-jj-dark/70 font-normal max-w-2xl leading-relaxed mb-4 sm:mb-6">
-          We help hotels, luxury resorts, boutique villas, and travel brands attract high-intent guests, scale direct bookings, and build iconic digital presences.
+          {heroData?.subheadline || "We help hotels, luxury resorts, boutique villas, and travel brands attract high-intent guests, scale direct bookings, and build iconic digital presences."}
         </p>
 
         {/* Action CTAs */}

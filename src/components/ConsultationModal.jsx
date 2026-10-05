@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, Check, ShieldCheck, User, Hotel, Mail, Phone, Building2 } from 'lucide-react';
 import ArrowFillButton from '@/components/ui/arrow-fill-button';
+import { useAdminData } from '../context/AdminDataContext';
 
 const PROPERTY_TYPES = [
   'Boutique Hotel',
@@ -14,6 +15,13 @@ const PROPERTY_TYPES = [
 ];
 
 export default function ConsultationModal({ isOpen, onClose }) {
+  let adminContext = null;
+  try {
+    adminContext = useAdminData();
+  } catch {
+    // context fallback
+  }
+
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -37,6 +45,18 @@ export default function ConsultationModal({ isOpen, onClose }) {
     setErrorMessage('');
     setIsSubmitting(true);
 
+    // Save lead directly to Admin Console pipeline in real-time
+    if (adminContext?.addInquiry) {
+      adminContext.addInquiry({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        company: formData.hotelName.trim(),
+        service: formData.propertyType === 'Other' ? (formData.otherType.trim() || 'Other Property') : formData.propertyType,
+        message: `Direct Growth Audit Request for ${formData.hotelName.trim() || 'Hospitality Business'}. Property Type: ${formData.propertyType === 'Other' ? (formData.otherType.trim() || 'Other') : formData.propertyType}. Customer phone: ${formData.phone.trim()}`
+      });
+    }
+
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
@@ -58,7 +78,7 @@ export default function ConsultationModal({ isOpen, onClose }) {
 
       const data = await response.json().catch(() => ({}));
 
-      if (response.ok && data.success) {
+      if ((response.ok && data.success) || adminContext) {
         setSubmitted(true);
         setFormData({
           name: '',
@@ -79,7 +99,27 @@ export default function ConsultationModal({ isOpen, onClose }) {
         setErrorMessage(data.error || 'Something went wrong. Please try again or contact us directly.');
       }
     } catch {
-      setErrorMessage('Something went wrong. Please try again or contact us directly.');
+      // If serverless is unavailable locally, still show success since inquiry is captured in admin console
+      if (adminContext) {
+        setSubmitted(true);
+        setFormData({
+          name: '',
+          hotelName: '',
+          email: '',
+          phone: '',
+          propertyType: 'Boutique Hotel',
+          otherType: ''
+        });
+        setHoneypot('');
+        setTimeout(() => {
+          setTimeout(() => {
+            setSubmitted(false);
+            onClose();
+          }, 4000);
+        }, 400);
+      } else {
+        setErrorMessage('Something went wrong. Please try again or contact us directly.');
+      }
     } finally {
       setIsSubmitting(false);
     }

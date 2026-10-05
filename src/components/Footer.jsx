@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, MapPin, Phone, ArrowUpRight, Instagram, Linkedin } from 'lucide-react';
+import { Mail, MapPin, Phone, ArrowUpRight, Instagram, Linkedin, Lock } from 'lucide-react';
 import ArrowFillButton from '@/components/ui/arrow-fill-button';
 
 export default function Footer({ onOpenConsultation, onNavigate }) {
@@ -140,8 +140,25 @@ export default function Footer({ onOpenConsultation, onNavigate }) {
         </div>
 
         {/* Bottom Rights */}
-        <div className="pt-8 text-center sm:text-left text-xs text-white/50">
-          © 2026 JJ Elevate. All rights reserved. Premium Digital Marketing Agency for Travel & Hospitality.
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/50">
+          <div>
+            © 2026 JJ Elevate. All rights reserved. Premium Digital Marketing Agency for Travel & Hospitality.
+          </div>
+          <div>
+            <a
+              href="/admin"
+              onClick={(e) => {
+                e.preventDefault();
+                if (onNavigate) onNavigate('/admin');
+                else window.location.pathname = '/admin';
+              }}
+              title="Administrator Portal"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Admin Portal</span>
+            </a>
+          </div>
         </div>
 
       </div>

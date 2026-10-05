@@ -8,17 +8,20 @@ import {
   VillaShantiLogo,
   SerenitySpringsLogo,
 } from './clients/HotelClientLogos';
+import { useAdminData } from '../context/AdminDataContext';
 
-/* ============================================================
-   ClientsMarquee — Sociallyin-inspired Infinite Client Ticker
-   Includes:
-   1. Luxury Hotel & Resort Clients (Taj, Oberoi, Leela, ITC, etc.)
-   2. Booking & Distribution Platforms directly from jjelevate.com
-      (Agoda, Airbnb, Booking.com, MakeMyTrip, Goibibo, Cleartrip, Vyapar)
-   ============================================================ */
+const HOTEL_LOGO_COMPONENTS = {
+  'taj hotels & palaces': TajLogo,
+  'the oberoi group': OberoiLogo,
+  'the leela palaces': LeelaLogo,
+  'itc hotels luxury': ITCLogo,
+  'heritage palace resorts': HeritagePalaceLogo,
+  'villa shanti stays': VillaShantiLogo,
+  'serenity springs resort': SerenitySpringsLogo,
+};
 
-// Hotel & Resort Clients
-const hotelClients = [
+// Default Hotel & Resort Clients
+const defaultHotelClients = [
   { name: 'Taj Hotels & Palaces', component: TajLogo },
   { name: 'The Oberoi Group', component: OberoiLogo },
   { name: 'The Leela Palaces', component: LeelaLogo },
@@ -28,8 +31,8 @@ const hotelClients = [
   { name: 'Serenity Springs Resort', component: SerenitySpringsLogo },
 ];
 
-// Distribution & OTA Platforms from jjelevate.com
-const otaPartners = [
+// Default Distribution & OTA Platforms from jjelevate.com
+const defaultOtaPartners = [
   { name: 'Agoda', logo: '/images/clients/agoda.png' },
   { name: 'Airbnb', logo: '/images/clients/airbnb.png' },
   { name: 'Booking.com', logo: '/images/clients/booking.png' },
@@ -39,12 +42,45 @@ const otaPartners = [
   { name: 'Vyapar', logo: '/images/clients/vyapar.png' },
 ];
 
-// Seamless loop items
-const marqueeHotels = [...hotelClients, ...hotelClients, ...hotelClients];
-const marqueeOtas = [...otaPartners, ...otaPartners, ...otaPartners];
-
 export default function ClientsMarquee() {
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'hotels' | 'partners'
+
+  let adminBrands = null;
+  try {
+    const adminCtx = useAdminData();
+    adminBrands = adminCtx?.data?.brands;
+  } catch {
+    // context fallback
+  }
+
+  // Build active lists from admin context or default
+  let hotelClients = defaultHotelClients;
+  let otaPartners = defaultOtaPartners;
+
+  if (adminBrands && adminBrands.length > 0) {
+    const dynamicHotels = adminBrands.filter(b => b.category === 'hotel').map(b => {
+      const key = (b.name || '').toLowerCase().trim();
+      return {
+        name: b.name,
+        logo: b.logo,
+        text: b.text || b.name,
+        component: HOTEL_LOGO_COMPONENTS[key] || null
+      };
+    });
+
+    const dynamicOtas = adminBrands.filter(b => b.category === 'partner').map(b => ({
+      name: b.name,
+      logo: b.logo || '/images/clients/booking.png',
+      text: b.text || b.name
+    }));
+
+    if (dynamicHotels.length > 0) hotelClients = dynamicHotels;
+    if (dynamicOtas.length > 0) otaPartners = dynamicOtas;
+  }
+
+  // Triple items for continuous infinite scroll
+  const marqueeHotels = [...hotelClients, ...hotelClients, ...hotelClients, ...hotelClients];
+  const marqueeOtas = [...otaPartners, ...otaPartners, ...otaPartners, ...otaPartners];
 
   return (
     <section
@@ -60,7 +96,7 @@ export default function ClientsMarquee() {
           Brands That Grow With <span className="text-jj-pink">JJ Elevate</span>
         </h3>
 
-        {/* Filter Pills (Sociallyin inspired clean minimalism) */}
+        {/* Filter Pills */}
         <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mt-6 max-w-xl mx-auto">
           <button
             onClick={() => setActiveTab('all')}
@@ -80,7 +116,7 @@ export default function ClientsMarquee() {
                 : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'
             }`}
           >
-            Hotel &amp; Resort Clients
+            Hotels &amp; Luxury Resorts
           </button>
           <button
             onClick={() => setActiveTab('partners')}
@@ -119,7 +155,19 @@ export default function ClientsMarquee() {
                     className="inline-flex items-center justify-center mx-8 sm:mx-12 shrink-0 group cursor-pointer"
                   >
                     <div className="h-12 sm:h-14 flex items-center justify-center px-5 py-2 rounded-2xl bg-neutral-50/70 border border-neutral-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all duration-300 group-hover:bg-white group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] group-hover:scale-105">
-                      <LogoComp className="h-8 sm:h-10 w-auto" />
+                      {LogoComp ? (
+                        <LogoComp className="h-8 sm:h-10 w-auto" />
+                      ) : client.logo ? (
+                        <img
+                          src={client.logo}
+                          alt={client.name}
+                          className="h-8 sm:h-10 w-auto max-w-[130px] object-contain"
+                        />
+                      ) : (
+                        <span className="font-serif font-bold text-xs sm:text-sm tracking-widest text-neutral-800 uppercase">
+                          {client.text || client.name}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -146,12 +194,18 @@ export default function ClientsMarquee() {
                   className="inline-flex items-center justify-center mx-8 sm:mx-12 shrink-0 group cursor-pointer"
                 >
                   <div className="h-12 sm:h-14 flex items-center justify-center px-5 py-2 rounded-2xl bg-neutral-50/70 border border-neutral-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all duration-300 group-hover:bg-white group-hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)] group-hover:scale-105">
-                    <img
-                      src={partner.logo}
-                      alt={`${partner.name} logo`}
-                      loading="lazy"
-                      className="h-7 sm:h-9 md:h-10 w-auto max-w-[130px] sm:max-w-[150px] object-contain transition-all duration-300 group-hover:scale-105"
-                    />
+                    {partner.logo ? (
+                      <img
+                        src={partner.logo}
+                        alt={`${partner.name} logo`}
+                        loading="lazy"
+                        className="h-7 sm:h-9 md:h-10 w-auto max-w-[130px] sm:max-w-[150px] object-contain transition-all duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="font-serif font-bold text-xs sm:text-sm tracking-widest text-neutral-800 uppercase">
+                        {partner.text || partner.name}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -182,5 +236,3 @@ export default function ClientsMarquee() {
     </section>
   );
 }
-
-

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAdminData } from '../context/AdminDataContext';
 import { 
   Mail, 
   MapPin, 
@@ -17,6 +18,14 @@ import {
 } from 'lucide-react';
 
 export default function ContactSection({ onOpenConsultation }) {
+  let adminCtx = null;
+  try {
+    adminCtx = useAdminData();
+  } catch {
+    // context fallback
+  }
+  const adminContact = adminCtx?.data?.contact;
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -60,6 +69,17 @@ export default function ContactSection({ onOpenConsultation }) {
     setErrorMessage('');
     setIsSubmitting(true);
 
+    if (adminCtx?.addInquiry) {
+      adminCtx.addInquiry({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: '',
+        company: formData.company.trim(),
+        service: formData.service || 'Contact Brief',
+        message: `Budget: ${formData.budget}. Message: ${formData.message.trim()}`
+      });
+    }
+
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
@@ -81,7 +101,7 @@ export default function ContactSection({ onOpenConsultation }) {
 
       const data = await response.json().catch(() => ({}));
 
-      if (response.ok && data.success) {
+      if ((response.ok && data.success) || adminCtx) {
         setSubmitted(true);
         setFormData({
           name: '',
@@ -197,7 +217,7 @@ export default function ContactSection({ onOpenConsultation }) {
                     VISIT US
                   </p>
                   <p className="text-sm font-bold text-[#0B0C10] mt-0.5 leading-snug">
-                    226, Pal Rd, near 56 Bhog Sweets, opposite Samrat Ashok Udhyan, Keshavnagar, Jodhpur, Rajasthan 342001
+                    {adminContact?.address || "226, Pal Rd, near 56 Bhog Sweets, opposite Samrat Ashok Udhyan, Keshavnagar, Jodhpur, Rajasthan 342001"}
                   </p>
                   <p className="text-xs text-[#0B0C10]/55 mt-1">
                     By appointment only
@@ -214,7 +234,7 @@ export default function ContactSection({ onOpenConsultation }) {
               </p>
               <div className="flex gap-3">
                 <a 
-                  href="https://linkedin.com" 
+                  href={adminContact?.social?.linkedin || "https://linkedin.com"} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   aria-label="LinkedIn"
@@ -223,7 +243,7 @@ export default function ContactSection({ onOpenConsultation }) {
                   <Linkedin className="w-5 h-5" />
                 </a>
                 <a 
-                  href="https://twitter.com" 
+                  href={adminContact?.social?.twitter || "https://twitter.com"} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   aria-label="Twitter"
@@ -232,7 +252,7 @@ export default function ContactSection({ onOpenConsultation }) {
                   <Twitter className="w-5 h-5" />
                 </a>
                 <a 
-                  href="https://instagram.com" 
+                  href={adminContact?.social?.instagram || "https://instagram.com"} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   aria-label="Instagram"

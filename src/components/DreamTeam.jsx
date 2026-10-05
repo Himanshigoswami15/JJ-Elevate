@@ -7,6 +7,7 @@ import {
   ChevronLeft, 
   ChevronRight 
 } from 'lucide-react';
+import { useAdminData } from '../context/AdminDataContext';
 
 export const teamMembersData = [
   {
@@ -96,18 +97,32 @@ export const teamMembersData = [
 ];
 
 export default function DreamTeam({ className = '' }) {
-  // Order for 3D cover-flow showcase
-  const orderedTeam = [
-    teamMembersData.find(m => m.id === 'arshad') || teamMembersData[1],
-    teamMembersData.find(m => m.id === 'yash') || teamMembersData[0],
-    teamMembersData.find(m => m.id === 'jaideep') || teamMembersData[0],
-    teamMembersData.find(m => m.id === 'shivani') || teamMembersData[0],
-    teamMembersData.find(m => m.id === 'himanshi') || teamMembersData[4],
-    teamMembersData.find(m => m.id === 'altaf') || teamMembersData[2],
-    teamMembersData.find(m => m.id === 'pushpendra') || teamMembersData[3],
-  ];
+  let adminTeam = null;
+  try {
+    const adminCtx = useAdminData();
+    adminTeam = adminCtx?.data?.teamMembers;
+  } catch {
+    // context fallback
+  }
 
-  const [activeTeamIndex, setActiveTeamIndex] = useState(1); // Default to Yash (index 1) in center
+  const activeTeamMembers = (adminTeam && adminTeam.length > 0)
+    ? adminTeam.filter(m => m.active !== false).map((m, idx) => ({
+        id: m.id || `tm-${idx}`,
+        name: m.name,
+        role: m.role || m.title || 'HOSPITALITY SPECIALIST',
+        category: m.category || 'LEADERSHIP',
+        highlightBadge: m.highlightBadge || m.role || 'CORE TEAM',
+        experience: m.experience || 'EXPERT',
+        bio: m.bio || '',
+        specialties: m.specialties || ['Hospitality Growth', 'Direct Bookings'],
+        image: m.image || m.img || '/images/team/YASH.webp',
+        linkedin: m.linkedin || 'https://www.linkedin.com/'
+      }))
+    : teamMembersData;
+
+  const orderedTeam = activeTeamMembers;
+
+  const [activeTeamIndex, setActiveTeamIndex] = useState(0);
   const [isTeamPaused, setIsTeamPaused] = useState(false);
 
   const nextTeamCard = () => {

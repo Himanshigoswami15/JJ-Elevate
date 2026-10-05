@@ -18,6 +18,8 @@ import AboutPage from './components/AboutPage';
 import ServicesPage from './components/ServicesPage';
 import CaseStudiesPage from './components/CaseStudiesPage';
 import ContactPage from './components/ContactPage';
+import { AdminDataProvider } from './context/AdminDataContext';
+import AdminApp from './admin/AdminApp';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -41,6 +43,7 @@ export default function App() {
     if (typeof window !== 'undefined') {
       const p = window.location.pathname.toLowerCase();
       const h = window.location.hash.toLowerCase();
+      if (p.startsWith('/admin') || h === '#admin' || h.startsWith('#admin')) return '/admin';
       if (p === '/about' || h === '#about') return '/about';
       if (p === '/services' || h === '#services' || h.startsWith('#hotel') || h.startsWith('#restaurant') || h === '#services-showcase') return '/services';
       if (p === '/case-studies' || p === '/cases' || p === '/portfolio' || h === '#cases') return '/case-studies';
@@ -128,7 +131,9 @@ export default function App() {
       setCurrentHash(h || '');
 
       const hLower = (h || '').toLowerCase();
-      if (p === '/book-call' || hLower === '#book-call' || hLower === '#consultation') {
+      if (p.startsWith('/admin') || hLower === '#admin' || hLower.startsWith('#admin')) {
+        setCurrentRoute('/admin');
+      } else if (p === '/book-call' || hLower === '#book-call' || hLower === '#consultation') {
         setConsultationOpen(true);
       } else if (p === '/about' || hLower === '#about') {
         setCurrentRoute('/about');
@@ -173,90 +178,96 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-jj-bg text-jj-dark font-body selection:bg-jj-pink/20 selection:text-jj-dark relative">
-      {/* Navigation */}
-      <Navbar 
-        onOpenConsultation={handleOpenConsultation}
-        currentRoute={currentRoute}
-        onNavigate={handleNavigate}
-      />
-
-      {/* Conditional Route Rendering */}
-      {currentRoute === '/about' ? (
-        <main>
-          <AboutPage 
-            onOpenConsultation={handleOpenConsultation}
-            onNavigateHome={() => handleNavigate('/', '#hero')}
-          />
-        </main>
-      ) : currentRoute === '/services' ? (
-        <main>
-          <ServicesPage 
-            targetHash={currentHash}
-            onOpenConsultation={handleOpenConsultation}
-            onNavigateHome={() => handleNavigate('/', '#hero')}
-          />
-        </main>
-      ) : currentRoute === '/case-studies' ? (
-        <main>
-          <CaseStudiesPage 
-            onOpenConsultation={handleOpenConsultation}
-            onNavigateHome={() => handleNavigate('/', '#hero')}
-          />
-        </main>
-      ) : currentRoute === '/contact' ? (
-        <main>
-          <ContactPage 
-            onOpenConsultation={handleOpenConsultation}
-            onNavigateHome={() => handleNavigate('/', '#hero')}
-          />
-        </main>
+    <AdminDataProvider>
+      {currentRoute === '/admin' ? (
+        <AdminApp onNavigateHome={() => handleNavigate('/')} />
       ) : (
-        /* Home Page Flow */
-        <main>
-          {/* 1. Hero */}
-          <Hero onOpenConsultation={handleOpenConsultation} />
-
-          {/* 2. Big Statement */}
-          <BigStatement onOpenConsultation={handleOpenConsultation} />
-
-          {/* 3. JJ Elevate Services Suite */}
-          <ResultsMetrics onOpenConsultation={handleOpenConsultation} />
-
-          {/* 4. Growth Ecosystem */}
-          <GrowthEcosystem onOpenConsultation={handleOpenConsultation} />
-
-          {/* 5. Clients Marquee Ticker */}
-          <ClientsMarquee />
-
-          {/* 6. Viral Reel Showcase */}
-          <ViralReelShowcase 
-            videoSrc="/videos/jj-elevate-reels-37.mp4"
-            onOpenConsultation={handleOpenConsultation} 
+        <div className="min-h-screen bg-jj-bg text-jj-dark font-body selection:bg-jj-pink/20 selection:text-jj-dark relative">
+          {/* Navigation */}
+          <Navbar 
+            onOpenConsultation={handleOpenConsultation}
+            currentRoute={currentRoute}
+            onNavigate={handleNavigate}
           />
 
-          {/* 7. Why Choose JJ Elevate */}
-          <WhyChooseUs onOpenConsultation={handleOpenConsultation} />
+          {/* Conditional Route Rendering */}
+          {currentRoute === '/about' ? (
+            <main>
+              <AboutPage 
+                onOpenConsultation={handleOpenConsultation}
+                onNavigateHome={() => handleNavigate('/', '#hero')}
+              />
+            </main>
+          ) : currentRoute === '/services' ? (
+            <main>
+              <ServicesPage 
+                targetHash={currentHash}
+                onOpenConsultation={handleOpenConsultation}
+                onNavigateHome={() => handleNavigate('/', '#hero')}
+              />
+            </main>
+          ) : currentRoute === '/case-studies' ? (
+            <main>
+              <CaseStudiesPage 
+                onOpenConsultation={handleOpenConsultation}
+                onNavigateHome={() => handleNavigate('/', '#hero')}
+              />
+            </main>
+          ) : currentRoute === '/contact' ? (
+            <main>
+              <ContactPage 
+                onOpenConsultation={handleOpenConsultation}
+                onNavigateHome={() => handleNavigate('/', '#hero')}
+              />
+            </main>
+          ) : (
+            /* Home Page Flow */
+            <main>
+              {/* 1. Hero */}
+              <Hero onOpenConsultation={handleOpenConsultation} />
 
-          {/* 8. What Our Clients Say */}
-          <Testimonials onOpenConsultation={handleOpenConsultation} />
+              {/* 2. Big Statement */}
+              <BigStatement onOpenConsultation={handleOpenConsultation} />
 
-          {/* 9. Yellow Newsletter Subscription CTA */}
-          <NewsletterCTA />
-        </main>
+              {/* 3. JJ Elevate Services Suite */}
+              <ResultsMetrics onOpenConsultation={handleOpenConsultation} />
+
+              {/* 4. Growth Ecosystem */}
+              <GrowthEcosystem onOpenConsultation={handleOpenConsultation} />
+
+              {/* 5. Clients Marquee Ticker */}
+              <ClientsMarquee />
+
+              {/* 6. Viral Reel Showcase */}
+              <ViralReelShowcase 
+                videoSrc="/videos/jj-elevate-reels-37.mp4"
+                onOpenConsultation={handleOpenConsultation} 
+              />
+
+              {/* 7. Why Choose JJ Elevate */}
+              <WhyChooseUs onOpenConsultation={handleOpenConsultation} />
+
+              {/* 8. What Our Clients Say */}
+              <Testimonials onOpenConsultation={handleOpenConsultation} />
+
+              {/* 9. Yellow Newsletter Subscription CTA */}
+              <NewsletterCTA />
+            </main>
+          )}
+
+          {/* Footer */}
+          <Footer 
+            onOpenConsultation={handleOpenConsultation}
+            onNavigate={handleNavigate}
+          />
+
+          {/* 3-Panel Strategy Call Interactive Booking Pop-up Modal */}
+          <ConsultationModal
+            isOpen={consultationOpen}
+            onClose={handleCloseConsultation}
+          />
+        </div>
       )}
-
-      {/* Footer */}
-      <Footer 
-        onOpenConsultation={handleOpenConsultation}
-        onNavigate={handleNavigate}
-      />
-
-      {/* 3-Panel Strategy Call Interactive Booking Pop-up Modal */}
-      <ConsultationModal
-        isOpen={consultationOpen}
-        onClose={handleCloseConsultation}
-      />
-    </div>
+    </AdminDataProvider>
   );
 }

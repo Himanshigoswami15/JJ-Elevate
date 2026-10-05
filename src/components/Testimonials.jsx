@@ -1,20 +1,5 @@
 import React from 'react';
-
-/* =========================================================================
-   Testimonials — Exact Sociallyin-inspired "What Our Clients Say" Section
-   Theme: Signature Brand Crimson (#FF1E56) Vibrant Canvas
-   Features:
-   - Vibrant brand crimson gradient background (#FF235B -> #FF1E56 -> #D00B3F)
-   - Crisp white dot matrix grid clusters
-   - Bold uppercase header: "WHAT OUR CLIENTS SAY" in white
-   - Obsidian dark "SEE MORE" button with gold lettering (#FFDE00)
-   - Large elevated white testimonial cards with double border & soft depth shadows
-   - Circular logo badge top-left + signature yellow quotation marks top-right
-   - Authentic, detailed client testimonials with bold author titles
-   - Sweeping wave divider into the next dark section (#0B0C10)
-   ========================================================================= */
-
-
+import { useAdminData } from '../context/AdminDataContext';
 
 // Signature Sociallyin-style Double Yellow Quotation Mark Icon
 function YellowQuoteMark({ className = "w-9 h-7" }) {
@@ -25,15 +10,13 @@ function YellowQuoteMark({ className = "w-9 h-7" }) {
       className={`text-[#FFDE00] select-none ${className}`}
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* First Quote Block */}
       <path d="M0 16C0 7.16 6.27 1.25 15.68 0L16.48 4.2C10.72 5.32 8.32 8.82 8.16 12.32H16V28H0V16Z" />
-      {/* Second Quote Block */}
       <path d="M20 16C20 7.16 26.27 1.25 35.68 0L36.48 4.2C30.72 5.32 28.32 8.82 28.16 12.32H36V28H20V16Z" />
     </svg>
   );
 }
 
-const clientTestimonials = [
+const defaultTestimonials = [
   {
     author: 'VIKRAMADITYA SINGH',
     organization: 'Heritage Palace Resorts, Jodhpur',
@@ -73,38 +56,56 @@ const clientTestimonials = [
 ];
 
 export default function Testimonials({ onOpenConsultation }) {
+  let adminTestimonials = null;
+  try {
+    const adminCtx = useAdminData();
+    adminTestimonials = adminCtx?.data?.testimonials;
+  } catch {
+    // context fallback
+  }
+
+  const activeTestimonials = (adminTestimonials && adminTestimonials.length > 0)
+    ? adminTestimonials.map((t, idx) => ({
+        author: t.author || t.clientName || 'HOTEL LEADER',
+        organization: t.organization || t.property || 'Luxury Hospitality',
+        image: t.image || t.avatar || '/images/testimonials/vikramaditya.jpg',
+        avatarText: t.avatarText || (t.author ? t.author.split(' ').map(w => w[0]).join('').slice(0, 2) : 'HT'),
+        logoBg: t.logoBg || (idx % 2 === 0 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200'),
+        quote: t.quote || t.content || ''
+      }))
+    : defaultTestimonials;
+
   return (
     <section
       id="testimonials"
-      className="resp-section relative w-full bg-gradient-to-br from-[#FF235B] via-[#FF1E56] to-[#D00B3F] text-white overflow-hidden select-none"
+      className="resp-section relative w-full bg-gradient-to-br from-[#FF235B] via-[#FF1E56] to-[#D00B3F] text-white overflow-hidden select-none py-16 sm:py-24"
     >
-
-
-      <div className="relative max-w-7xl mx-auto resp-container z-10">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
         {/* Header Strip: Title */}
         <div className="text-center max-w-4xl mx-auto mb-10 sm:mb-16">
-          <h2 className="resp-section-title font-display font-black text-white tracking-tight uppercase leading-none drop-shadow-sm">
+          <h2 className="resp-section-title font-display font-black text-white tracking-tight uppercase leading-none drop-shadow-sm text-3xl sm:text-5xl lg:text-6xl">
             WHAT OUR CLIENTS SAY
           </h2>
         </div>
 
-        {/* 2-Column Testimonials Grid (White Cards with Soft Shadows on Crimson Canvas) */}
+        {/* Dynamic Testimonials Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 items-stretch">
-          {clientTestimonials.slice(0, 2).map((testimonial, idx) => (
+          {activeTestimonials.map((testimonial, idx) => (
             <div
               key={idx}
               data-cursor="REVIEW"
-              className="resp-card luxury-spotlight-card group relative bg-white border-2 border-white/80 shadow-[0_20px_50px_rgba(150,8,45,0.35)] hover:shadow-[0_28px_65px_rgba(150,8,45,0.5)] hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between cursor-pointer"
+              className="resp-card luxury-spotlight-card group relative bg-white border-2 border-white/80 shadow-[0_20px_50px_rgba(150,8,45,0.35)] hover:shadow-[0_28px_65px_rgba(150,8,45,0.5)] hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between cursor-pointer rounded-2xl p-6 sm:p-8"
             >
               <div>
                 {/* Top Row: Circular Badge Left + Double Yellow Quotes Right */}
-                <div className="flex items-center justify-between gap-4 mb-8">
-                  {/* Circular Avatar Photo with Indian client portrait */}
+                <div className="flex items-center justify-between gap-4 mb-6">
+                  {/* Circular Avatar Photo */}
                   <div className="shrink-0">
                     <img
                       src={testimonial.image}
                       alt={testimonial.author}
                       className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover object-top border-2 border-white shadow-lg ring-2 ring-black/10 group-hover:ring-[#FF1E56]/40 transition-all duration-300"
+                      onError={(e) => { e.target.src = '/images/testimonials/vikramaditya.jpg'; }}
                       loading="lazy"
                     />
                   </div>
@@ -114,14 +115,14 @@ export default function Testimonials({ onOpenConsultation }) {
                 </div>
 
                 {/* Testimonial Quote Copy */}
-                <p className="text-slate-700 font-normal text-sm sm:text-base lg:text-[16.5px] leading-relaxed mb-10">
-                  {testimonial.quote}
+                <p className="text-slate-700 font-normal text-sm sm:text-base lg:text-[16.5px] leading-relaxed mb-8">
+                  "{testimonial.quote}"
                 </p>
               </div>
 
               {/* Card Footer: Author Name in Bold Condensed Font + Organization */}
               <div className="pt-6 border-t border-black/[0.06]">
-                <h3 className="font-display font-black text-xl sm:text-3xl text-jj-dark group-hover:text-jj-pink transition-colors uppercase tracking-tight leading-none mb-1.5">
+                <h3 className="font-display font-black text-xl sm:text-2xl text-jj-dark group-hover:text-jj-pink transition-colors uppercase tracking-tight leading-none mb-1.5">
                   {testimonial.author}
                 </h3>
                 <p className="text-slate-500 font-medium text-sm sm:text-base">
@@ -131,65 +132,6 @@ export default function Testimonials({ onOpenConsultation }) {
             </div>
           ))}
         </div>
-
-        {/* Secondary Row for More Testimonials on Scroll */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 items-stretch mt-6 sm:mt-10">
-          {clientTestimonials.slice(2, 4).map((testimonial, idx) => (
-            <div
-              key={idx}
-              data-cursor="REVIEW"
-              className="group luxury-spotlight-card relative bg-white rounded-[24px] sm:rounded-[36px] p-6 sm:p-10 lg:p-12 border-2 border-white/80 shadow-[0_20px_50px_rgba(150,8,45,0.35)] hover:shadow-[0_28px_65px_rgba(150,8,45,0.5)] hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between cursor-pointer"
-            >
-              <div>
-                {/* Top Row: Circular Badge Left + Double Yellow Quotes Right */}
-                <div className="flex items-center justify-between gap-4 mb-8">
-                  {/* Circular Avatar Photo with Indian client portrait */}
-                  <div className="shrink-0">
-                    <img
-                      src={testimonial.image}
-                      alt={testimonial.author}
-                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover object-top border-2 border-white shadow-lg ring-2 ring-black/10 group-hover:ring-[#FF1E56]/40 transition-all duration-300"
-                      loading="lazy"
-                    />
-                  </div>
-
-                  {/* Signature Yellow Quote Marks */}
-                  <YellowQuoteMark className="w-10 h-8 sm:w-11 sm:h-9" />
-                </div>
-
-                {/* Testimonial Quote Copy */}
-                <p className="text-slate-700 font-normal text-sm sm:text-base lg:text-[16.5px] leading-relaxed mb-10">
-                  {testimonial.quote}
-                </p>
-              </div>
-
-              {/* Card Footer: Author Name in Bold Condensed Font + Organization */}
-              <div className="pt-6 border-t border-black/[0.06]">
-                <h3 className="font-display font-black text-xl sm:text-3xl text-jj-dark group-hover:text-jj-pink transition-colors uppercase tracking-tight leading-none mb-1.5">
-                  {testimonial.author}
-                </h3>
-                <p className="text-slate-500 font-medium text-sm sm:text-base">
-                  {testimonial.organization}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Sweeping Organic Wave Bottom Shape Divider into Next Off-white Section (#FAF9F6) */}
-      <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none pointer-events-none z-10">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 1200 137.6"
-          preserveAspectRatio="none"
-          className="relative block w-full h-12 sm:h-20 lg:h-24 text-[#FAF9F6]"
-        >
-          <path
-            d="M0 137.6h1200V21.9l-66.7 26.7c-66.7 26.7-200 80-333.3 66.7S533.3 21.9 400 4.2C266.7-13.9 133.3 31.1 66.7 53L0 75.3v62.3z"
-            fill="currentColor"
-          />
-        </svg>
       </div>
     </section>
   );

@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight, CheckCircle2, X, Maximize2, Minimize2 } from 'lucide-react';
 import MagneticButton from './motion/MagneticButton';
+import { useAdminData } from '../context/AdminDataContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,7 +13,15 @@ export default function CaseStudiesWork({ onOpenConsultation }) {
   const sectionRef = useRef(null);
   const cardsContainerRef = useRef(null);
 
-  const projects = [
+  let adminCaseStudies = null;
+  try {
+    const adminCtx = useAdminData();
+    adminCaseStudies = adminCtx?.data?.caseStudies;
+  } catch {
+    // context fallback
+  }
+
+  const rawProjects = (adminCaseStudies && adminCaseStudies.length > 0) ? adminCaseStudies : [
     {
       id: 'case-1',
       title: 'The Royal Palace Resort',
@@ -43,99 +52,39 @@ export default function CaseStudiesWork({ onOpenConsultation }) {
           '4.9X ROAS on targeted Google Search campaigns'
         ]
       }
-    },
-    {
-      id: 'case-2',
-      title: 'Serenity Springs Villas',
-      location: 'Udaipur, India',
-      category: 'BOUTIQUE VILLAS',
-      bgColor: 'bg-[#E6E1F5]',
-      textColor: 'text-[#1D1B2A]',
-      subTextColor: 'text-[#1D1B2A]/80',
-      borderColor: 'border-[#1D1B2A]/15',
-      badgeBg: 'bg-[#FF1E56] text-white',
-      accentColor: 'text-[#FF1E56]',
-      metricHighlight: '4.8X ADS ROAS',
-      metricsTable: [
-        { label: 'VIDEO REEL VIEWS', value: '1.2M+ ORGANIC ↑' },
-        { label: 'WEEKEND OCCUPANCY', value: '100% IN 45 DAYS' },
-        { label: 'INSTAGRAM GROWTH', value: '+15,000 FANS ↑' },
-        { label: 'RETURN ON AD SPEND', value: '4.8X DIRECT ROAS' }
-      ],
-      image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1000&q=80',
-      description: 'Launched a high-aesthetic luxury video campaign on Instagram featuring architectural highlights and private pool villa experiences. Generated over 1.2 million views and 100% weekend room occupancy.',
-      fullDetails: {
-        challenge: 'A newly launched boutique luxury villa needed instant market awareness and weekend staycation bookings without waiting 6 months for SEO maturity.',
-        strategy: 'Created cinematic drone footage & aesthetic lifestyle reels. Deployed Meta conversion ads with custom booking offers.',
-        results: [
-          'Over 1.2 million organic and paid reel views',
-          '100% weekend room occupancy achieved in 45 days',
-          '4.8X return on ad spend (ROAS)',
-          '+15,000 engaged Instagram followers'
-        ]
-      }
-    },
-    {
-      id: 'case-3',
-      title: 'Desert Haven Haveli & Spa',
-      location: 'Jaisalmer, Rajasthan',
-      category: 'HERITAGE HAVELI',
-      bgColor: 'bg-[#FF1E56]',
-      textColor: 'text-white',
-      subTextColor: 'text-white/85',
-      borderColor: 'border-white/20',
-      badgeBg: 'bg-[#0B0C10] text-white',
-      accentColor: 'text-jj-yellow',
-      metricHighlight: '#1 GOOGLE RANKING',
-      metricsTable: [
-        { label: 'GOOGLE RANKINGS', value: '#1 FOR 14 KEYWORDS' },
-        { label: 'WHATSAPP LEADS', value: '+180% INQUIRIES ↑' },
-        { label: 'AVERAGE DAILY RATE', value: '+38% ADR INCREASE' },
-        { label: 'DIRECT BOOKINGS', value: '62% OF TOTAL STAYS' }
-      ],
-      image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1000&q=80',
-      description: 'Captured high-value seasonal desert safari travelers searching for authentic boutique haveli stays. Outranked aggregators to rank #1 on Google for 14 destination keywords.',
-      fullDetails: {
-        challenge: 'Outranked by major hotel aggregators on Google Search for top destination queries.',
-        strategy: 'Executed schema-structured hotel SEO, optimized Google Business Profile, and launched multilingual landing pages.',
-        results: [
-          'Ranked #1 for 14 high-intent desert luxury stay keywords',
-          '+180% surge in direct WhatsApp inquiry leads',
-          '+38% increase in Average Daily Rate (ADR)'
-        ]
-      }
-    },
-    {
-      id: 'case-4',
-      title: 'Coastal Palms Resort',
-      location: 'Goa, India',
-      category: 'BEACH RESORT',
-      bgColor: 'bg-[#0B0C10]',
-      textColor: 'text-white',
-      subTextColor: 'text-white/80',
-      borderColor: 'border-white/15',
-      badgeBg: 'bg-[#FF1E56] text-white',
-      accentColor: 'text-[#FF1E56]',
-      metricHighlight: '+65% MOBILE CONVERSION',
-      metricsTable: [
-        { label: 'MOBILE CHECKOUT', value: '+65% COMPLETION ↑' },
-        { label: 'PAGE LOAD SPEED', value: '5.4s → 0.8s FAST' },
-        { label: 'CART DROP-OFFS', value: '0% PAYMENT FAILS' },
-        { label: 'RATE PARITY', value: '100% PROTECTED' }
-      ],
-      image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1000&q=80',
-      description: 'Re-engineered a clunky resort website into an ultra-fast mobile booking experience integrated with instant WhatsApp rate assistance and zero checkout drop-offs.',
-      fullDetails: {
-        challenge: '78% of website traffic was on mobile, but cart abandonment on the old booking portal exceeded 88%.',
-        strategy: 'Engineered a modern mobile web app with 2-click booking, UPI integration, and automated pre-arrival WhatsApp concierge.',
-        results: [
-          '+65% increase in mobile booking completion',
-          'Average page load time reduced from 5.4s to 0.8s',
-          'Zero cart abandonment due to payment drop-offs'
-        ]
-      }
     }
   ];
+
+  const projects = rawProjects.map((cs, idx) => ({
+    id: cs.id || `case-${idx + 1}`,
+    title: cs.title,
+    location: cs.location || 'India',
+    category: cs.category || 'LUXURY RESORT',
+    bgColor: cs.bgColor || (idx % 3 === 0 ? 'bg-[#EFECE6]' : idx % 3 === 1 ? 'bg-[#E6E1F5]' : 'bg-[#F2EDE4]'),
+    textColor: cs.textColor || 'text-[#0B0C10]',
+    subTextColor: cs.subTextColor || 'text-[#0B0C10]/80',
+    borderColor: cs.borderColor || 'border-[#0B0C10]/15',
+    badgeBg: cs.badgeBg || (idx % 2 === 0 ? 'bg-[#0B0C10] text-white' : 'bg-[#FF1E56] text-white'),
+    accentColor: cs.accentColor || 'text-[#FF1E56]',
+    metricHighlight: cs.metricHighlight || '+340% DIRECT BOOKINGS',
+    metricsTable: cs.metricsTable && cs.metricsTable.length > 0 ? cs.metricsTable : [
+      { label: 'CHANNEL', value: 'DIRECT BOOKING ENGINE' },
+      { label: 'PERFORMANCE', value: cs.metricHighlight || '+340% BOOKINGS' },
+      { label: 'CAMPAIGN', value: 'VIRAL REELS & PERFORMANCE' },
+      { label: 'COMMISSION SAVED', value: '18% → 0% OTA CUT' }
+    ],
+    image: cs.image || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
+    description: cs.description,
+    fullDetails: cs.fullDetails || {
+      challenge: 'High reliance on third-party aggregators charging 20%+ commissions.',
+      strategy: 'Engineered high-aesthetic video reels and high-converting direct booking funnel.',
+      results: [
+        '+340% direct website booking increase',
+        'Over 1.2M organic video reel views',
+        '4.8X return on advertising spend'
+      ]
+    }
+  }));
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
