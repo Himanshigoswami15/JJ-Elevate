@@ -3,6 +3,12 @@ import { useAdminData } from '../context/AdminDataContext';
 
 const VIDEO_PRESETS = [
   {
+    title: 'JJ Elevate Reels 41 MP4',
+    url: '/videos/jj-elevate-reels-41.mp4',
+    poster: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1200&auto=format&fit=crop',
+    label: 'Reels 41'
+  },
+  {
     title: 'JJ Elevate Reel Showcase MP4',
     url: '/videos/jj-elevate-reels-37.mp4',
     poster: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1200&auto=format&fit=crop',

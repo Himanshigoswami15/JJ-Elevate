@@ -9,7 +9,7 @@ export const DEFAULT_ADMIN_DATA = {
     headlineAccent: "noteworthy",
     headlineLine2: "hospitality brands",
     subheadline: "We help hotels, luxury resorts, boutique villas, and travel brands attract high-intent guests, scale direct bookings, and build iconic digital presences.",
-    videoUrl: "/videos/jj-elevate-portfolio.mp4",
+    videoUrl: "/videos/jj-elevate-reels-41.mp4",
     poster: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1200&auto=format&fit=crop",
     ctaPrimaryText: "Let's grow together",
     ctaSecondaryText: "Explore Work",
@@ -409,10 +409,14 @@ export function AdminDataProvider({ children }) {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
+        const parsedHero = { ...DEFAULT_ADMIN_DATA.hero, ...(parsed.hero || {}) };
+        if (!parsedHero.videoUrl || parsedHero.videoUrl === '/videos/jj-elevate-portfolio.mp4') {
+          parsedHero.videoUrl = '/videos/jj-elevate-reels-41.mp4';
+        }
         return {
           ...DEFAULT_ADMIN_DATA,
           ...parsed,
-          hero: { ...DEFAULT_ADMIN_DATA.hero, ...(parsed.hero || {}) },
+          hero: parsedHero,
           growthServicesHeader: { ...DEFAULT_ADMIN_DATA.growthServicesHeader, ...(parsed.growthServicesHeader || {}) },
           reels: { ...DEFAULT_ADMIN_DATA.reels, ...(parsed.reels || {}) },
           contact: { 
@@ -456,7 +460,7 @@ export function AdminDataProvider({ children }) {
       }
       return { success: true };
     }
-    return { success: false, message: 'Invalid username or password. Use demo credentials: admin / admin123' };
+    return { success: false, message: 'Invalid username or password. Please try again.' };
   };
 
   const logoutAdmin = () => {

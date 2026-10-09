@@ -243,6 +243,8 @@ export default function Hero({ onOpenConsultation }) {
             {/* HTML5 Autoplay JJ Elevate Portfolio Video Loop */}
             <video
               ref={videoRef}
+              key={heroData?.videoUrl || "/videos/jj-elevate-reels-41.mp4"}
+              src={heroData?.videoUrl || "/videos/jj-elevate-reels-41.mp4"}
               autoPlay
               loop
               muted={isMuted}
@@ -253,7 +255,7 @@ export default function Hero({ onOpenConsultation }) {
               className="w-full h-full object-cover"
             >
               <source
-                src={heroData?.videoUrl || "/videos/jj-elevate-portfolio.mp4"}
+                src={heroData?.videoUrl || "/videos/jj-elevate-reels-41.mp4"}
                 type="video/mp4"
               />
             </video>

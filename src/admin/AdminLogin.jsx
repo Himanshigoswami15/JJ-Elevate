@@ -4,8 +4,8 @@ import './admin.css';
 
 export default function AdminLogin({ onLoginSuccess, onNavigateHome }) {
   const { loginAdmin } = useAdminData();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -24,12 +24,6 @@ export default function AdminLogin({ onLoginSuccess, onNavigateHome }) {
         setError(res.message);
       }
     }, 250);
-  };
-
-  const handleFillDemo = () => {
-    setUsername('admin');
-    setPassword('admin123');
-    setError('');
   };
 
   return (
@@ -180,34 +174,10 @@ export default function AdminLogin({ onLoginSuccess, onNavigateHome }) {
             </div>
           </div>
 
-          {/* Quick Demo Credentials Preset Button */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '1.5rem',
-            padding: '8px 12px',
-            background: '#f8fafc',
-            border: '1px dashed var(--adm-border)',
-            borderRadius: '8px'
-          }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-secondary)' }}>
-              Demo: <strong>admin</strong> / <strong>admin123</strong>
-            </span>
-            <button
-              type="button"
-              onClick={handleFillDemo}
-              className="adm-btn adm-btn-secondary adm-btn-sm"
-              style={{ fontSize: '0.75rem', padding: '3px 8px' }}
-            >
-              Fill Demo
-            </button>
-          </div>
-
           <button
             type="submit"
             className="adm-btn adm-btn-primary"
-            style={{ width: '100%', padding: '12px', fontSize: '0.96rem' }}
+            style={{ width: '100%', padding: '12px', fontSize: '0.96rem', marginTop: '0.5rem' }}
             disabled={isLoading}
           >
             {isLoading ? (
