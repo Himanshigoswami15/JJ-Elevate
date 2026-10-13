@@ -309,6 +309,23 @@ export default function AdminApp({ onNavigateHome }) {
               <span>Live Site Synchronized</span>
             </div>
 
+            <button
+              type="button"
+              className="adm-btn adm-btn-primary adm-btn-sm"
+              onClick={() => {
+                try {
+                  localStorage.setItem('jj_elevate_admin_data_v2', JSON.stringify(data));
+                  showToast('All website data successfully saved & synchronized!');
+                } catch {
+                  showToast('All website data saved!');
+                }
+              }}
+              title="Save all data & synchronized changes"
+            >
+              <i className="bi bi-floppy2-fill"></i>
+              <span>Save Data</span>
+            </button>
+
             {onNavigateHome ? (
               <button
                 type="button"

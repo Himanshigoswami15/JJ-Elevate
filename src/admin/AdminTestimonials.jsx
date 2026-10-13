@@ -33,12 +33,12 @@ export default function AdminTestimonials({ showToast }) {
   const handleOpenEdit = (item) => {
     setEditingItem(item);
     setFormData({
-      clientName: item.clientName || '',
-      role: item.role || '',
-      property: item.property || '',
-      content: item.content || '',
+      clientName: item.clientName || item.author || '',
+      role: item.role || 'General Manager',
+      property: item.property || item.organization || '',
+      content: item.content || item.quote || '',
       rating: item.rating || 5,
-      avatar: item.avatar || ''
+      avatar: item.avatar || item.image || ''
     });
     setModalOpen(true);
   };
@@ -58,11 +58,23 @@ export default function AdminTestimonials({ showToast }) {
     e.preventDefault();
     if (!formData.clientName.trim()) return;
 
+    const payload = {
+      ...formData,
+      author: formData.clientName,
+      clientName: formData.clientName,
+      organization: formData.property,
+      property: formData.property,
+      quote: formData.content,
+      content: formData.content,
+      image: formData.avatar || AVATAR_PRESETS[0].url,
+      avatar: formData.avatar || AVATAR_PRESETS[0].url
+    };
+
     if (editingItem) {
-      updateTestimonial(editingItem.id, formData);
+      updateTestimonial(editingItem.id, payload);
       showToast(`Testimonial from "${formData.clientName}" updated!`);
     } else {
-      addTestimonial(formData);
+      addTestimonial(payload);
       showToast(`Testimonial from "${formData.clientName}" added!`);
     }
 
@@ -110,15 +122,15 @@ export default function AdminTestimonials({ showToast }) {
             <div key={item.id} className="adm-item-card">
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                 <img
-                  src={item.avatar || AVATAR_PRESETS[0].url}
-                  alt={item.clientName}
+                  src={item.avatar || item.image || AVATAR_PRESETS[0].url}
+                  alt={item.clientName || item.author}
                   style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }}
                   onError={(e) => { e.target.src = AVATAR_PRESETS[0].url; }}
                 />
                 <div>
-                  <h4 className="adm-item-title" style={{ fontSize: '0.98rem' }}>{item.clientName}</h4>
+                  <h4 className="adm-item-title" style={{ fontSize: '0.98rem' }}>{item.clientName || item.author}</h4>
                   <div style={{ fontSize: '0.78rem', color: 'var(--adm-text-secondary)' }}>
-                    {item.role}, {item.property}
+                    {item.role ? `${item.role}${item.property || item.organization ? ' · ' + (item.property || item.organization) : ''}` : (item.property || item.organization)}
                   </div>
                 </div>
               </div>
@@ -130,7 +142,7 @@ export default function AdminTestimonials({ showToast }) {
               </div>
 
               <p className="adm-item-desc" style={{ fontStyle: 'italic' }}>
-                "{item.content}"
+                "{item.content || item.quote}"
               </p>
 
               <div className="adm-item-actions">
@@ -158,137 +170,150 @@ export default function AdminTestimonials({ showToast }) {
       {/* Modal */}
       {modalOpen && (
         <div className="adm-modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false); }}>
-          <div className="adm-modal-box">
-            <div className="adm-modal-header">
+          <form
+            className="adm-modal-box"
+            onSubmit={handleSave}
+            style={{ maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+          >
+            <div className="adm-modal-header" style={{ flexShrink: 0 }}>
               <h3>{editingItem ? 'Edit Testimonial' : 'Add New Client Testimonial'}</h3>
-              <button
-                type="button"
-                className="adm-modal-close"
-                onClick={() => setModalOpen(false)}
-              >
-                <i className="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <form onSubmit={handleSave}>
-              <div className="adm-modal-body">
-                <div className="adm-form-group">
-                  <label className="adm-label">Client Name</label>
-                  <input
-                    type="text"
-                    className="adm-input"
-                    value={formData.clientName}
-                    onChange={e => setFormData({ ...formData, clientName: e.target.value })}
-                    placeholder="E.g. Rajeev Malhotra"
-                    required
-                  />
-                </div>
-
-                <div className="adm-grid-2" style={{ gap: '1rem' }}>
-                  <div className="adm-form-group">
-                    <label className="adm-label">Role / Position</label>
-                    <input
-                      type="text"
-                      className="adm-input"
-                      value={formData.role}
-                      onChange={e => setFormData({ ...formData, role: e.target.value })}
-                      placeholder="E.g. Managing Director"
-                      required
-                    />
-                  </div>
-                  <div className="adm-form-group">
-                    <label className="adm-label">Hotel / Brand</label>
-                    <input
-                      type="text"
-                      className="adm-input"
-                      value={formData.property}
-                      onChange={e => setFormData({ ...formData, property: e.target.value })}
-                      placeholder="E.g. The Royal Haveli Udaipur"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="adm-form-group">
-                  <label className="adm-label">Star Rating</label>
-                  <select
-                    className="adm-select"
-                    value={formData.rating}
-                    onChange={e => setFormData({ ...formData, rating: Number(e.target.value) })}
-                  >
-                    <option value={5}>5 Stars (★★★★★)</option>
-                    <option value={4}>4 Stars (★★★★☆)</option>
-                    <option value={3}>3 Stars (★★★☆☆)</option>
-                  </select>
-                </div>
-
-                <div className="adm-form-group">
-                  <label className="adm-label">Client Avatar URL</label>
-                  <input
-                    type="text"
-                    className="adm-input"
-                    value={formData.avatar}
-                    onChange={e => setFormData({ ...formData, avatar: e.target.value })}
-                    placeholder="Avatar image URL"
-                  />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
-                    <label className="adm-btn adm-btn-secondary adm-btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
-                      <i className="bi bi-upload"></i>
-                      <span>Upload Avatar</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarUpload}
-                        style={{ display: 'none' }}
-                      />
-                    </label>
-                    <span style={{ fontSize: '0.76rem', color: 'var(--adm-text-muted)' }}>Presets:</span>
-                  </div>
-                  <div className="adm-preset-pills">
-                    {AVATAR_PRESETS.map((p, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        className={`adm-preset-pill ${formData.avatar === p.url ? 'active' : ''}`}
-                        onClick={() => setFormData({ ...formData, avatar: p.url })}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="adm-form-group" style={{ marginBottom: 0 }}>
-                  <label className="adm-label">Testimonial Quote / Feedback</label>
-                  <textarea
-                    className="adm-textarea"
-                    rows={3}
-                    value={formData.content}
-                    onChange={e => setFormData({ ...formData, content: e.target.value })}
-                    placeholder="Enter what the client said about JJ Elevate..."
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="adm-modal-footer">
-                <button
-                  type="button"
-                  className="adm-btn adm-btn-secondary"
-                  onClick={() => setModalOpen(false)}
-                >
-                  Cancel
-                </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button
                   type="submit"
-                  className="adm-btn adm-btn-primary"
+                  className="adm-btn adm-btn-primary adm-btn-sm"
+                  title="Save Testimonial"
                 >
                   <i className="bi bi-check-lg"></i>
-                  <span>{editingItem ? 'Update Testimonial' : 'Save Testimonial'}</span>
+                  <span>{editingItem ? 'Update' : 'Save Testimonial'}</span>
+                </button>
+                <button
+                  type="button"
+                  className="adm-modal-close"
+                  onClick={() => setModalOpen(false)}
+                  title="Close"
+                >
+                  <i className="bi bi-x-lg"></i>
                 </button>
               </div>
-            </form>
-          </div>
+            </div>
+
+            <div className="adm-modal-body" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
+              <div className="adm-form-group">
+                <label className="adm-label">Client Name</label>
+                <input
+                  type="text"
+                  className="adm-input"
+                  value={formData.clientName}
+                  onChange={e => setFormData({ ...formData, clientName: e.target.value })}
+                  placeholder="E.g. Rajeev Malhotra"
+                  required
+                />
+              </div>
+
+              <div className="adm-grid-2" style={{ gap: '1rem' }}>
+                <div className="adm-form-group">
+                  <label className="adm-label">Role / Position</label>
+                  <input
+                    type="text"
+                    className="adm-input"
+                    value={formData.role}
+                    onChange={e => setFormData({ ...formData, role: e.target.value })}
+                    placeholder="E.g. Managing Director"
+                    required
+                  />
+                </div>
+                <div className="adm-form-group">
+                  <label className="adm-label">Hotel / Brand</label>
+                  <input
+                    type="text"
+                    className="adm-input"
+                    value={formData.property}
+                    onChange={e => setFormData({ ...formData, property: e.target.value })}
+                    placeholder="E.g. The Royal Haveli Udaipur"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-label">Star Rating</label>
+                <select
+                  className="adm-select"
+                  value={formData.rating}
+                  onChange={e => setFormData({ ...formData, rating: Number(e.target.value) })}
+                >
+                  <option value={5}>5 Stars (★★★★★)</option>
+                  <option value={4}>4 Stars (★★★★☆)</option>
+                  <option value={3}>3 Stars (★★★☆☆)</option>
+                </select>
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-label">Client Avatar URL</label>
+                <input
+                  type="text"
+                  className="adm-input"
+                  value={formData.avatar}
+                  onChange={e => setFormData({ ...formData, avatar: e.target.value })}
+                  placeholder="Avatar image URL"
+                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
+                  <label className="adm-btn adm-btn-secondary adm-btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
+                    <i className="bi bi-upload"></i>
+                    <span>Upload Avatar</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  <span style={{ fontSize: '0.76rem', color: 'var(--adm-text-muted)' }}>Presets:</span>
+                </div>
+                <div className="adm-preset-pills">
+                  {AVATAR_PRESETS.map((p, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`adm-preset-pill ${formData.avatar === p.url ? 'active' : ''}`}
+                      onClick={() => setFormData({ ...formData, avatar: p.url })}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                <label className="adm-label">Testimonial Quote / Feedback</label>
+                <textarea
+                  className="adm-textarea"
+                  rows={3}
+                  value={formData.content}
+                  onChange={e => setFormData({ ...formData, content: e.target.value })}
+                  placeholder="Enter what the client said about JJ Elevate..."
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="adm-modal-footer" style={{ flexShrink: 0 }}>
+              <button
+                type="button"
+                className="adm-btn adm-btn-secondary"
+                onClick={() => setModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="adm-btn adm-btn-primary"
+              >
+                <i className="bi bi-check-lg"></i>
+                <span>{editingItem ? 'Update Testimonial' : 'Save Testimonial'}</span>
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

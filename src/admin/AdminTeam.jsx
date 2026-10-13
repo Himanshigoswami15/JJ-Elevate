@@ -35,9 +35,9 @@ export default function AdminTeam({ showToast }) {
     setEditingItem(item);
     setFormData({
       name: item.name || '',
-      title: item.title || '',
+      title: item.title || item.role || '',
       bio: item.bio || '',
-      img: item.img || '',
+      img: item.img || item.image || '',
       active: item.active !== false,
       linkedin: item.linkedin || '',
       instagram: item.instagram || ''
@@ -60,11 +60,19 @@ export default function AdminTeam({ showToast }) {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
+    const payload = {
+      ...formData,
+      image: formData.img || TEAM_AVATAR_PRESETS[0].url,
+      img: formData.img || TEAM_AVATAR_PRESETS[0].url,
+      role: formData.title,
+      title: formData.title
+    };
+
     if (editingItem) {
-      updateTeamMember(editingItem.id, formData);
+      updateTeamMember(editingItem.id, payload);
       showToast(`Team member "${formData.name}" updated!`);
     } else {
-      addTeamMember(formData);
+      addTeamMember(payload);
       showToast(`Team member "${formData.name}" added!`);
     }
 
@@ -112,7 +120,7 @@ export default function AdminTeam({ showToast }) {
             <div key={member.id} className="adm-item-card" style={{ textAlign: 'center' }}>
               <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto 12px' }}>
                 <img
-                  src={member.img || TEAM_AVATAR_PRESETS[0].url}
+                  src={member.img || member.image || TEAM_AVATAR_PRESETS[0].url}
                   alt={member.name}
                   style={{
                     width: '96px',
@@ -139,7 +147,7 @@ export default function AdminTeam({ showToast }) {
               <div className="adm-item-body">
                 <h4 className="adm-item-title" style={{ fontSize: '1rem' }}>{member.name}</h4>
                 <div className="adm-item-subtitle" style={{ fontSize: '0.78rem', marginBottom: '8px' }}>
-                  {member.title}
+                  {member.title || member.role}
                 </div>
                 <p className="adm-item-desc" style={{ fontSize: '0.8rem', textAlign: 'left' }}>
                   {member.bio}
@@ -184,146 +192,159 @@ export default function AdminTeam({ showToast }) {
       {/* Modal */}
       {modalOpen && (
         <div className="adm-modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false); }}>
-          <div className="adm-modal-box">
-            <div className="adm-modal-header">
+          <form
+            className="adm-modal-box"
+            onSubmit={handleSave}
+            style={{ maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+          >
+            <div className="adm-modal-header" style={{ flexShrink: 0 }}>
               <h3>{editingItem ? 'Edit Team Member' : 'Add New Team Member'}</h3>
-              <button
-                type="button"
-                className="adm-modal-close"
-                onClick={() => setModalOpen(false)}
-              >
-                <i className="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <form onSubmit={handleSave}>
-              <div className="adm-modal-body">
-                <div className="adm-form-group">
-                  <label className="adm-label">Full Name</label>
-                  <input
-                    type="text"
-                    className="adm-input"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="E.g. Jayvardhan Joshi"
-                    required
-                  />
-                </div>
-
-                <div className="adm-form-group">
-                  <label className="adm-label">Role / Job Title</label>
-                  <input
-                    type="text"
-                    className="adm-input"
-                    value={formData.title}
-                    onChange={e => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="E.g. Co-Founder & Creative Director"
-                    required
-                  />
-                </div>
-
-                <div className="adm-form-group">
-                  <label className="adm-label">Profile Image URL</label>
-                  <input
-                    type="text"
-                    className="adm-input"
-                    value={formData.img}
-                    onChange={e => setFormData({ ...formData, img: e.target.value })}
-                    placeholder="Image URL or upload below"
-                  />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
-                    <label className="adm-btn adm-btn-secondary adm-btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
-                      <i className="bi bi-upload"></i>
-                      <span>Upload Photo from Device</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        style={{ display: 'none' }}
-                      />
-                    </label>
-                    <span style={{ fontSize: '0.76rem', color: 'var(--adm-text-muted)' }}>Or choose preset:</span>
-                  </div>
-                  <div className="adm-preset-pills">
-                    {TEAM_AVATAR_PRESETS.map((p, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        className={`adm-preset-pill ${formData.img === p.url ? 'active' : ''}`}
-                        onClick={() => setFormData({ ...formData, img: p.url })}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="adm-form-group">
-                  <label className="adm-label">Short Biography</label>
-                  <textarea
-                    className="adm-textarea"
-                    rows={3}
-                    value={formData.bio}
-                    onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                    placeholder="Bio, experience, and background..."
-                    required
-                  />
-                </div>
-
-                <div className="adm-grid-2" style={{ gap: '1rem' }}>
-                  <div className="adm-form-group">
-                    <label className="adm-label">LinkedIn URL</label>
-                    <input
-                      type="text"
-                      className="adm-input"
-                      value={formData.linkedin}
-                      onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
-                      placeholder="https://linkedin.com/in/..."
-                    />
-                  </div>
-                  <div className="adm-form-group">
-                    <label className="adm-label">Instagram URL</label>
-                    <input
-                      type="text"
-                      className="adm-input"
-                      value={formData.instagram}
-                      onChange={e => setFormData({ ...formData, instagram: e.target.value })}
-                      placeholder="https://instagram.com/..."
-                    />
-                  </div>
-                </div>
-
-                <div className="adm-form-group" style={{ marginBottom: 0 }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={formData.active}
-                      onChange={e => setFormData({ ...formData, active: e.target.checked })}
-                      style={{ width: '16px', height: '16px', accentColor: 'var(--adm-pink)' }}
-                    />
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Active (Visible on public website)</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="adm-modal-footer">
-                <button
-                  type="button"
-                  className="adm-btn adm-btn-secondary"
-                  onClick={() => setModalOpen(false)}
-                >
-                  Cancel
-                </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button
                   type="submit"
-                  className="adm-btn adm-btn-primary"
+                  className="adm-btn adm-btn-primary adm-btn-sm"
+                  title="Save Member"
                 >
                   <i className="bi bi-check-lg"></i>
-                  <span>{editingItem ? 'Update Member' : 'Save Member'}</span>
+                  <span>{editingItem ? 'Update' : 'Save Member'}</span>
+                </button>
+                <button
+                  type="button"
+                  className="adm-modal-close"
+                  onClick={() => setModalOpen(false)}
+                  title="Close"
+                >
+                  <i className="bi bi-x-lg"></i>
                 </button>
               </div>
-            </form>
-          </div>
+            </div>
+
+            <div className="adm-modal-body" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
+              <div className="adm-form-group">
+                <label className="adm-label">Full Name</label>
+                <input
+                  type="text"
+                  className="adm-input"
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="E.g. Jayvardhan Joshi"
+                  required
+                />
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-label">Role / Job Title</label>
+                <input
+                  type="text"
+                  className="adm-input"
+                  value={formData.title}
+                  onChange={e => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="E.g. Co-Founder & Creative Director"
+                  required
+                />
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-label">Profile Image URL</label>
+                <input
+                  type="text"
+                  className="adm-input"
+                  value={formData.img}
+                  onChange={e => setFormData({ ...formData, img: e.target.value })}
+                  placeholder="Image URL or upload below"
+                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
+                  <label className="adm-btn adm-btn-secondary adm-btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
+                    <i className="bi bi-upload"></i>
+                    <span>Upload Photo from Device</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  <span style={{ fontSize: '0.76rem', color: 'var(--adm-text-muted)' }}>Or choose preset:</span>
+                </div>
+                <div className="adm-preset-pills">
+                  {TEAM_AVATAR_PRESETS.map((p, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`adm-preset-pill ${formData.img === p.url ? 'active' : ''}`}
+                      onClick={() => setFormData({ ...formData, img: p.url })}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="adm-form-group">
+                <label className="adm-label">Short Biography</label>
+                <textarea
+                  className="adm-textarea"
+                  rows={3}
+                  value={formData.bio}
+                  onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                  placeholder="Bio, experience, and background..."
+                  required
+                />
+              </div>
+
+              <div className="adm-grid-2" style={{ gap: '1rem' }}>
+                <div className="adm-form-group">
+                  <label className="adm-label">LinkedIn URL</label>
+                  <input
+                    type="text"
+                    className="adm-input"
+                    value={formData.linkedin}
+                    onChange={e => setFormData({ ...formData, linkedin: e.target.value })}
+                    placeholder="https://linkedin.com/in/..."
+                  />
+                </div>
+                <div className="adm-form-group">
+                  <label className="adm-label">Instagram URL</label>
+                  <input
+                    type="text"
+                    className="adm-input"
+                    value={formData.instagram}
+                    onChange={e => setFormData({ ...formData, instagram: e.target.value })}
+                    placeholder="https://instagram.com/..."
+                  />
+                </div>
+              </div>
+
+              <div className="adm-form-group" style={{ marginBottom: 0 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.active}
+                    onChange={e => setFormData({ ...formData, active: e.target.checked })}
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--adm-pink)' }}
+                  />
+                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Active (Visible on public website)</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="adm-modal-footer" style={{ flexShrink: 0 }}>
+              <button
+                type="button"
+                className="adm-btn adm-btn-secondary"
+                onClick={() => setModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="adm-btn adm-btn-primary"
+              >
+                <i className="bi bi-check-lg"></i>
+                <span>{editingItem ? 'Update Member' : 'Save Member'}</span>
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

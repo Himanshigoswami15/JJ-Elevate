@@ -597,12 +597,17 @@ export function AdminDataProvider({ children }) {
 
   // Team Members CRUD
   const addTeamMember = (member) => {
+    const memberImg = member.image || member.img || '/images/team/YASH.webp';
+    const memberRole = member.role || member.title || 'HOSPITALITY SPECIALIST';
     const newMember = {
       id: `tm-${Date.now()}`,
       active: true,
       specialties: ['Hospitality Growth', 'Direct Bookings'],
-      image: '/images/team/YASH.webp',
-      ...member
+      ...member,
+      image: memberImg,
+      img: memberImg,
+      role: memberRole,
+      title: memberRole
     };
     setData(prev => ({
       ...prev,
@@ -614,7 +619,19 @@ export function AdminDataProvider({ children }) {
   const updateTeamMember = (id, fields) => {
     setData(prev => ({
       ...prev,
-      teamMembers: (prev.teamMembers || []).map(m => m.id === id ? { ...m, ...fields } : m)
+      teamMembers: (prev.teamMembers || []).map(m => {
+        if (m.id !== id) return m;
+        const updatedImg = fields.image || fields.img || m.image || m.img;
+        const updatedRole = fields.role || fields.title || m.role || m.title;
+        return {
+          ...m,
+          ...fields,
+          image: updatedImg,
+          img: updatedImg,
+          role: updatedRole,
+          title: updatedRole
+        };
+      })
     }));
   };
 
@@ -627,7 +644,8 @@ export function AdminDataProvider({ children }) {
 
   // Testimonials CRUD ("What Our Clients Say")
   const addTestimonial = (testimonial) => {
-    const initials = (testimonial.author || 'CL')
+    const authorName = testimonial.clientName || testimonial.author || 'Hotel Leader';
+    const initials = authorName
       .split(' ')
       .map(w => w[0])
       .join('')
@@ -639,8 +657,15 @@ export function AdminDataProvider({ children }) {
       rating: 5,
       avatarText: initials,
       logoBg: 'bg-rose-50 text-rose-700 border-rose-200',
-      image: '/images/testimonials/vikramaditya.jpg',
-      ...testimonial
+      ...testimonial,
+      author: authorName,
+      clientName: authorName,
+      organization: testimonial.property || testimonial.organization || 'Luxury Hospitality',
+      property: testimonial.property || testimonial.organization || 'Luxury Hospitality',
+      quote: testimonial.content || testimonial.quote || '',
+      content: testimonial.content || testimonial.quote || '',
+      image: testimonial.avatar || testimonial.image || '/images/testimonials/vikramaditya.jpg',
+      avatar: testimonial.avatar || testimonial.image || '/images/testimonials/vikramaditya.jpg'
     };
     setData(prev => ({
       ...prev,
@@ -652,7 +677,25 @@ export function AdminDataProvider({ children }) {
   const updateTestimonial = (id, fields) => {
     setData(prev => ({
       ...prev,
-      testimonials: (prev.testimonials || []).map(t => t.id === id ? { ...t, ...fields } : t)
+      testimonials: (prev.testimonials || []).map(t => {
+        if (t.id !== id) return t;
+        const authorName = fields.clientName || fields.author || t.clientName || t.author;
+        const org = fields.property || fields.organization || t.property || t.organization;
+        const text = fields.content || fields.quote || t.content || t.quote;
+        const img = fields.avatar || fields.image || t.avatar || t.image;
+        return {
+          ...t,
+          ...fields,
+          author: authorName,
+          clientName: authorName,
+          organization: org,
+          property: org,
+          quote: text,
+          content: text,
+          image: img,
+          avatar: img
+        };
+      })
     }));
   };
 
