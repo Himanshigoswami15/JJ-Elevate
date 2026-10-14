@@ -3,7 +3,9 @@ import { motion } from 'framer-motion';
 import { 
   Users, 
   CheckCircle2, 
-  Linkedin 
+  Linkedin, 
+  ChevronLeft, 
+  ChevronRight 
 } from 'lucide-react';
 import { useAdminData } from '../context/AdminDataContext';
 
@@ -161,12 +163,41 @@ export default function DreamTeam({ className = '' }) {
 
   const orderedTeam = activeTeamMembers;
 
+  const [activeTeamIndex, setActiveTeamIndex] = useState(0);
+  const [isTeamPaused, setIsTeamPaused] = useState(false);
+
+  // Keep index within bounds if team size changes
+  useEffect(() => {
+    if (activeTeamIndex >= orderedTeam.length && orderedTeam.length > 0) {
+      setActiveTeamIndex(0);
+    }
+  }, [orderedTeam.length, activeTeamIndex]);
+
+  const nextTeamCard = () => {
+    if (orderedTeam.length <= 1) return;
+    setActiveTeamIndex((prev) => (prev + 1) % orderedTeam.length);
+  };
+
+  const prevTeamCard = () => {
+    if (orderedTeam.length <= 1) return;
+    setActiveTeamIndex((prev) => (prev - 1 + orderedTeam.length) % orderedTeam.length);
+  };
+
+  // Continuous smooth auto-advance scrolling rotation across team members (pauses on hover/touch)
+  useEffect(() => {
+    if (isTeamPaused || orderedTeam.length <= 1) return;
+    const timer = setInterval(() => {
+      nextTeamCard();
+    }, 4200);
+    return () => clearInterval(timer);
+  }, [isTeamPaused, orderedTeam.length, activeTeamIndex]);
+
   return (
     <section id="team" className={`relative w-full py-14 sm:py-20 overflow-hidden bg-[#FAF9F6] scroll-mt-20 ${className}`}>
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/10 text-xs font-black uppercase tracking-widest text-jj-pink mb-4 shadow-sm">
             <Users className="w-3.5 h-3.5 text-jj-pink" />
             <span>THE ARCHITECTS OF DIRECT REVENUE</span>
@@ -185,67 +216,199 @@ export default function DreamTeam({ className = '' }) {
           </p>
         </div>
 
-        {/* Responsive Grid Showcase: All team members always rendered and visible */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-7 max-w-7xl mx-auto">
-          {orderedTeam.map((member) => (
-            <motion.div
-              key={member.id}
-              whileHover={{ y: -6 }}
-              className="bg-white rounded-[24px] border border-black/[0.08] overflow-hidden flex flex-col justify-between shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_40px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 group"
-            >
-              <div>
-                <div className="relative h-64 overflow-hidden bg-gradient-to-b from-[#F2F4F7] via-[#F8F9FB] to-white flex items-end justify-center pt-3">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = '/images/team/YASH.webp';
+        {/* 3D Cover-Flow Depth Carousel Animation Showcase */}
+        <div 
+          onMouseEnter={() => setIsTeamPaused(true)}
+          onMouseLeave={() => setIsTeamPaused(false)}
+          onTouchStart={() => setIsTeamPaused(true)}
+          onTouchEnd={() => setIsTeamPaused(false)}
+          className="relative w-full max-w-5xl mx-auto h-[480px] sm:h-[520px] md:h-[550px] flex items-center justify-center overflow-visible select-none py-2"
+        >
+          {/* Ambient Center Glow */}
+          <div className="absolute w-[320px] sm:w-[420px] h-[320px] sm:h-[420px] rounded-full bg-jj-pink/[0.07] blur-3xl pointer-events-none z-0" />
+
+          {/* Centered Depth Cards Presentation */}
+          {orderedTeam.map((member, idx) => {
+            const total = orderedTeam.length;
+            let diff = idx - activeTeamIndex;
+            if (diff > total / 2) diff -= total;
+            if (diff < -total / 2) diff += total;
+
+            const isCenter = diff === 0;
+
+            // Responsive slide offsets
+            const xOffset = diff === 0 
+              ? "0%" 
+              : diff === -1 
+              ? "-74%" 
+              : diff === 1 
+              ? "74%" 
+              : diff === -2 
+              ? "-138%" 
+              : diff === 2 
+              ? "138%" 
+              : diff > 0 
+              ? "180%" 
+              : "-180%";
+
+            return (
+              <motion.div
+                key={member.id}
+                animate={{
+                  x: xOffset,
+                  scale: diff === 0 ? 1 : Math.abs(diff) === 1 ? 0.83 : Math.abs(diff) === 2 ? 0.68 : 0.55,
+                  opacity: diff === 0 ? 1 : Math.abs(diff) === 1 ? 0.50 : Math.abs(diff) === 2 ? 0.18 : 0,
+                  zIndex: diff === 0 ? 30 : Math.abs(diff) === 1 ? 20 : Math.abs(diff) === 2 ? 10 : 0,
+                  filter: diff === 0 ? "blur(0px)" : "blur(0.8px)"
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 280,
+                  damping: 28,
+                  mass: 0.8
+                }}
+                drag={isCenter ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.25}
+                onDragEnd={(e, { offset, velocity }) => {
+                  if (offset.x < -50 || velocity.x < -250) {
+                    nextTeamCard();
+                  } else if (offset.x > 50 || velocity.x > 250) {
+                    prevTeamCard();
+                  }
+                }}
+                onClick={() => {
+                  if (diff === 0) {
+                    nextTeamCard();
+                  } else {
+                    setActiveTeamIndex(idx);
+                  }
+                }}
+                className={`absolute w-[285px] sm:w-[340px] md:w-[370px] h-[450px] sm:h-[490px] md:h-[520px] bg-white rounded-[28px] sm:rounded-[34px] border border-black/[0.08] overflow-hidden flex flex-col justify-between transition-shadow duration-300 cursor-pointer group ${
+                  isCenter 
+                    ? "shadow-[0_25px_60px_-15px_rgba(0,0,0,0.16),0_10px_20px_-5px_rgba(0,0,0,0.06)] hover:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.22)]" 
+                    : "shadow-[0_10px_30px_-5px_rgba(0,0,0,0.06)] hover:opacity-75"
+                }`}
+              >
+                {/* Card Top: High-Fidelity Portrait Photo */}
+                <div>
+                  <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (diff === 0) {
+                        nextTeamCard();
+                      } else {
+                        setActiveTeamIndex(idx);
+                      }
                     }}
-                  />
-                  <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-white via-white/80 to-transparent" />
-                </div>
+                    className="relative h-72 sm:h-80 md:h-[340px] overflow-hidden bg-gradient-to-b from-[#F2F4F7] via-[#F8F9FB] to-white flex items-end justify-center select-none pt-3 cursor-pointer"
+                  >
+                    {/* Ambient card glow */}
+                    <div className="absolute top-4 w-44 h-44 rounded-full bg-jj-pink/[0.06] blur-xl pointer-events-none" />
 
-                <div className="p-5">
-                  <h3 className="font-display font-black text-xl text-[#0B0C10] tracking-tight uppercase leading-tight mb-1">
-                    {member.name}
-                  </h3>
-                  <span className="text-[11px] font-bold tracking-wider text-jj-pink uppercase block mb-2.5">
-                    {member.role}
-                  </span>
-                  {member.bio && (
-                    <p className="text-xs text-jj-dark/70 font-normal leading-relaxed line-clamp-3">
-                      {member.bio}
-                    </p>
-                  )}
-                </div>
-              </div>
+                    {/* Portrait Image of Team Member */}
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="w-full h-full object-cover object-top z-0 pointer-events-none transition-transform duration-500 ease-out group-hover:scale-105"
+                      loading={isCenter || Math.abs(diff) <= 1 ? "eager" : "lazy"}
+                      decoding="async"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/images/team/YASH.webp';
+                      }}
+                    />
 
-              <div className="p-5 pt-0">
-                <div className="pt-3 border-t border-black/[0.07] flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-jj-pink" />
-                    <span className="text-[10px] font-bold text-jj-dark/65 uppercase tracking-wider">
-                      Active Team
-                    </span>
+                    {/* Bottom soft gradient blend */}
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none" />
                   </div>
-                  {member.linkedin && (
-                    <a
-                      href={member.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-1.5 rounded-full bg-[#FAF9F6] hover:bg-jj-pink hover:text-white text-jj-dark/70 transition-all duration-200 border border-black/[0.08]"
-                      title={`Connect with ${member.name} on LinkedIn`}
-                    >
-                      <Linkedin className="w-3.5 h-3.5" />
-                    </a>
-                  )}
+
+                  {/* Downside of the Photo: Name & Role */}
+                  <div className="p-5 sm:p-6 pt-3 pb-2">
+                    <h3 className="font-display font-black text-xl sm:text-2xl text-[#0B0C10] tracking-tight uppercase leading-tight mb-1">
+                      {member.name}
+                    </h3>
+
+                    <div>
+                      <span className="text-[11px] font-bold tracking-wider text-jj-pink uppercase block">
+                        {member.role}
+                      </span>
+                    </div>
+
+                    {member.bio && isCenter && (
+                      <p className="text-xs text-jj-dark/70 font-normal leading-relaxed line-clamp-2 mt-2">
+                        {member.bio}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+
+                {/* Card Bottom Bar: Active Status & LinkedIn Connect */}
+                <div className="p-5 sm:p-6 pt-0 pb-4">
+                  <div className="pt-3 border-t border-black/[0.07] flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-jj-pink" />
+                      <span className="text-[10px] sm:text-[11px] font-bold text-jj-dark/65 uppercase tracking-wider">
+                        Active on Accounts
+                      </span>
+                    </div>
+
+                    {member.linkedin && (
+                      <a
+                        href={member.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 rounded-full bg-[#FAF9F6] hover:bg-jj-pink hover:text-white text-jj-dark/70 transition-all duration-200 border border-black/[0.08] shadow-xs"
+                        title={`Connect with ${member.name} on LinkedIn`}
+                      >
+                        <Linkedin className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Carousel Navigation Arrows & Pagination Dots */}
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 z-20 relative">
+          <button
+            type="button"
+            onClick={prevTeamCard}
+            className="p-2 sm:p-2.5 rounded-full bg-white hover:bg-[#0B0C10] hover:text-[#FFDE00] text-jj-dark border border-black/10 shadow-xs hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+            title="Previous Team Member"
+            aria-label="Previous Team Member"
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+
+          <div className="flex items-center gap-2">
+            {orderedTeam.map((_, dotIdx) => (
+              <button
+                type="button"
+                key={dotIdx}
+                onClick={() => setActiveTeamIndex(dotIdx)}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${
+                  dotIdx === activeTeamIndex
+                    ? 'w-8 sm:w-9 h-2.5 bg-jj-pink shadow-xs'
+                    : 'w-2.5 h-2.5 bg-black/20 hover:bg-black/40'
+                }`}
+                aria-label={`Go to slide ${dotIdx + 1}`}
+              />
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={nextTeamCard}
+            className="p-2 sm:p-2.5 rounded-full bg-white hover:bg-[#0B0C10] hover:text-[#FFDE00] text-jj-dark border border-black/10 shadow-xs hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+            title="Next Team Member"
+            aria-label="Next Team Member"
+          >
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
         </div>
 
       </div>
