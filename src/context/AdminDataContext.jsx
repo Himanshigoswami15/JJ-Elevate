@@ -477,16 +477,51 @@ export function AdminDataProvider({ children }) {
     return localStorage.getItem(AUTH_KEY) === 'true';
   });
 
-  // Sync state to localStorage whenever data changes
+  // Sync state to localStorage whenever data changes and dispatch sync event
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        window.dispatchEvent(new CustomEvent('jj-admin-data-sync', { detail: data }));
       } catch (e) {
         console.error('Failed to save admin data to localStorage:', e);
       }
     }
   }, [data]);
+
+  // Listen for storage changes from other tabs or windows
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleStorageChange = (e) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          setData(prev => ({
+            ...prev,
+            ...parsed,
+            teamMembers: parsed.teamMembers || prev.teamMembers
+          }));
+        } catch (err) {
+          console.error('Failed to parse incoming storage update:', err);
+        }
+      }
+    };
+
+    const handleCustomSync = (e) => {
+      if (e.detail) {
+        setData(e.detail);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('jj-admin-data-sync', handleCustomSync);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('jj-admin-data-sync', handleCustomSync);
+    };
+  }, []);
 
   // Auth methods
   const loginAdmin = (username, password) => {

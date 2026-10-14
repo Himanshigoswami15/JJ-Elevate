@@ -3,11 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Users, 
   CheckCircle2, 
-  Linkedin, 
-  ChevronLeft, 
-  ChevronRight,
-  LayoutGrid,
-  Layers
+  Linkedin 
 } from 'lucide-react';
 import { useAdminData } from '../context/AdminDataContext';
 
@@ -99,6 +95,21 @@ export const teamMembersData = [
 ];
 
 export default function DreamTeam({ className = '' }) {
+  const [syncedTeam, setSyncedTeam] = useState(() => {
+    try {
+      const stored = localStorage.getItem('jj_elevate_admin_data_v2');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed?.teamMembers) && parsed.teamMembers.length > 0) {
+          return parsed.teamMembers;
+        }
+      }
+    } catch (e) {
+      // fallback
+    }
+    return null;
+  });
+
   let adminTeam = null;
   try {
     const adminCtx = useAdminData();
@@ -107,8 +118,34 @@ export default function DreamTeam({ className = '' }) {
     // context fallback
   }
 
-  const activeTeamMembers = (adminTeam && adminTeam.length > 0)
-    ? adminTeam.filter(m => m.active !== false).map((m, idx) => ({
+  // Cross-tab and local real-time synchronization listener
+  useEffect(() => {
+    const handleSync = () => {
+      try {
+        const stored = localStorage.getItem('jj_elevate_admin_data_v2');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed?.teamMembers)) {
+            setSyncedTeam(parsed.teamMembers);
+          }
+        }
+      } catch (e) {
+        console.error('Error syncing team data:', e);
+      }
+    };
+
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('jj-admin-data-sync', handleSync);
+    return () => {
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('jj-admin-data-sync', handleSync);
+    };
+  }, []);
+
+  const rawTeam = syncedTeam || adminTeam;
+
+  const activeTeamMembers = (rawTeam && rawTeam.length > 0)
+    ? rawTeam.filter(m => m.active !== false).map((m, idx) => ({
         id: m.id || `tm-${idx}`,
         name: m.name,
         role: m.role || m.title || 'HOSPITALITY SPECIALIST',
@@ -124,35 +161,12 @@ export default function DreamTeam({ className = '' }) {
 
   const orderedTeam = activeTeamMembers;
 
-  const [viewMode, setViewMode] = useState('grid');
-  const [activeTeamIndex, setActiveTeamIndex] = useState(0);
-  const [isTeamPaused, setIsTeamPaused] = useState(false);
-
-  const nextTeamCard = () => {
-    if (orderedTeam.length <= 1) return;
-    setActiveTeamIndex((prev) => (prev + 1) % orderedTeam.length);
-  };
-
-  const prevTeamCard = () => {
-    if (orderedTeam.length <= 1) return;
-    setActiveTeamIndex((prev) => (prev - 1 + orderedTeam.length) % orderedTeam.length);
-  };
-
-  // Continuous smooth auto-advance rotation across team members (pauses on hover/touch)
-  useEffect(() => {
-    if (viewMode !== 'carousel' || isTeamPaused || orderedTeam.length <= 1) return;
-    const timer = setInterval(() => {
-      nextTeamCard();
-    }, 4200);
-    return () => clearInterval(timer);
-  }, [viewMode, isTeamPaused, orderedTeam.length, activeTeamIndex]);
-
   return (
     <section id="team" className={`relative w-full py-14 sm:py-20 overflow-hidden bg-[#FAF9F6] scroll-mt-20 ${className}`}>
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/10 text-xs font-black uppercase tracking-widest text-jj-pink mb-4 shadow-sm">
             <Users className="w-3.5 h-3.5 text-jj-pink" />
             <span>THE ARCHITECTS OF DIRECT REVENUE</span>
@@ -166,273 +180,73 @@ export default function DreamTeam({ className = '' }) {
             </span>
           </h2>
           
-          <p className="text-base sm:text-lg text-jj-dark/75 mt-3 font-normal max-w-2xl mx-auto leading-relaxed mb-6">
+          <p className="text-base sm:text-lg text-jj-dark/75 mt-3 font-normal max-w-2xl mx-auto leading-relaxed">
             Senior growth architects, search engineers, and creative directors scaling direct booking revenue for premier hotels and resorts.
           </p>
-
-          {/* View Mode Toggle: Grid vs 3D Carousel */}
-          <div className="inline-flex items-center p-1 bg-white border border-black/10 rounded-full shadow-xs">
-            <button
-              type="button"
-              onClick={() => setViewMode('grid')}
-              className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
-                viewMode === 'grid'
-                  ? 'bg-jj-dark text-white shadow-xs'
-                  : 'text-jj-dark/60 hover:text-jj-dark'
-              }`}
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span>All Members ({orderedTeam.length})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('carousel')}
-              className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
-                viewMode === 'carousel'
-                  ? 'bg-jj-pink text-white shadow-xs'
-                  : 'text-jj-dark/60 hover:text-jj-dark'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>3D Carousel</span>
-            </button>
-          </div>
         </div>
 
-        {/* View 1: Responsive Grid Showcase (All members visible immediately) */}
-        {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {orderedTeam.map((member) => (
-              <motion.div
-                key={member.id}
-                whileHover={{ y: -6 }}
-                className="bg-white rounded-[24px] border border-black/[0.08] overflow-hidden flex flex-col justify-between shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_40px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 group"
-              >
-                <div>
-                  <div className="relative h-64 overflow-hidden bg-gradient-to-b from-[#F2F4F7] via-[#F8F9FB] to-white flex items-end justify-center pt-3">
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/images/team/YASH.webp';
-                      }}
-                    />
-                    <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-white via-white/80 to-transparent" />
-                  </div>
-
-                  <div className="p-5">
-                    <h3 className="font-display font-black text-xl text-[#0B0C10] tracking-tight uppercase leading-tight mb-1">
-                      {member.name}
-                    </h3>
-                    <span className="text-[11px] font-bold tracking-wider text-jj-pink uppercase block mb-2.5">
-                      {member.role}
-                    </span>
-                    {member.bio && (
-                      <p className="text-xs text-jj-dark/70 font-normal leading-relaxed line-clamp-3">
-                        {member.bio}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="p-5 pt-0">
-                  <div className="pt-3 border-t border-black/[0.07] flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-jj-pink" />
-                      <span className="text-[10px] font-bold text-jj-dark/65 uppercase tracking-wider">
-                        Active Team
-                      </span>
-                    </div>
-                    {member.linkedin && (
-                      <a
-                        href={member.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 rounded-full bg-[#FAF9F6] hover:bg-jj-pink hover:text-white text-jj-dark/70 transition-all duration-200 border border-black/[0.08]"
-                        title={`Connect with ${member.name} on LinkedIn`}
-                      >
-                        <Linkedin className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          /* View 2: Dribbble Horizontal Scrolling 3D Cover-Flow Carousel */
-          <>
-            <div 
-              onMouseEnter={() => setIsTeamPaused(true)}
-              onMouseLeave={() => setIsTeamPaused(false)}
-              onTouchStart={() => setIsTeamPaused(true)}
-              onTouchEnd={() => setIsTeamPaused(false)}
-              className="relative w-full max-w-5xl mx-auto h-[480px] sm:h-[520px] md:h-[550px] flex items-center justify-center overflow-visible select-none py-2"
+        {/* Responsive Grid Showcase: All team members always rendered and visible */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-7 max-w-7xl mx-auto">
+          {orderedTeam.map((member) => (
+            <motion.div
+              key={member.id}
+              whileHover={{ y: -6 }}
+              className="bg-white rounded-[24px] border border-black/[0.08] overflow-hidden flex flex-col justify-between shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_40px_-8px_rgba(0,0,0,0.12)] transition-all duration-300 group"
             >
-              {/* Ambient Center Glow */}
-              <div className="absolute w-[320px] sm:w-[420px] h-[320px] sm:h-[420px] rounded-full bg-jj-pink/[0.07] blur-3xl pointer-events-none z-0" />
-
-              {/* Centered Depth Cards Presentation */}
-              {orderedTeam.map((member, idx) => {
-                const total = orderedTeam.length;
-                let diff = idx - activeTeamIndex;
-                if (diff > total / 2) diff -= total;
-                if (diff < -total / 2) diff += total;
-
-                const isCenter = diff === 0;
-
-                // Responsive slide offsets
-                const xOffset = diff === 0 ? "0%" : diff === -1 ? "-74%" : diff === 1 ? "74%" : diff > 0 ? "150%" : "-150%";
-
-                return (
-                  <motion.div
-                    key={member.id}
-                    animate={{
-                      x: xOffset,
-                      scale: diff === 0 ? 1 : Math.abs(diff) === 1 ? 0.82 : 0.65,
-                      opacity: diff === 0 ? 1 : Math.abs(diff) === 1 ? 0.42 : 0,
-                      zIndex: diff === 0 ? 30 : Math.abs(diff) === 1 ? 20 : 10,
-                      filter: diff === 0 ? "blur(0px)" : "blur(0.8px)"
+              <div>
+                <div className="relative h-64 overflow-hidden bg-gradient-to-b from-[#F2F4F7] via-[#F8F9FB] to-white flex items-end justify-center pt-3">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/images/team/YASH.webp';
                     }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 280,
-                      damping: 28,
-                      mass: 0.8
-                    }}
-                    drag={isCenter ? "x" : false}
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.25}
-                    onDragEnd={(e, { offset, velocity }) => {
-                      if (offset.x < -50 || velocity.x < -250) {
-                        nextTeamCard();
-                      } else if (offset.x > 50 || velocity.x > 250) {
-                        prevTeamCard();
-                      }
-                    }}
-                    onClick={() => {
-                      if (diff === 0) {
-                        nextTeamCard();
-                      } else if (diff < 0) {
-                        prevTeamCard();
-                      } else {
-                        nextTeamCard();
-                      }
-                    }}
-                    className={`absolute w-[285px] sm:w-[340px] md:w-[370px] h-[450px] sm:h-[490px] md:h-[520px] bg-white rounded-[28px] sm:rounded-[34px] border border-black/[0.08] overflow-hidden flex flex-col justify-between transition-shadow duration-300 cursor-pointer group ${
-                      isCenter 
-                        ? "shadow-[0_25px_60px_-15px_rgba(0,0,0,0.16),0_10px_20px_-5px_rgba(0,0,0,0.06)] hover:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.22)]" 
-                        : "shadow-[0_10px_30px_-5px_rgba(0,0,0,0.06)] hover:opacity-75"
-                    }`}
-                  >
-                    <div>
-                      <div 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (diff === 0) {
-                            nextTeamCard();
-                          } else if (diff < 0) {
-                            prevTeamCard();
-                          } else {
-                            nextTeamCard();
-                          }
-                        }}
-                        className="relative h-72 sm:h-80 md:h-[340px] overflow-hidden bg-gradient-to-b from-[#F2F4F7] via-[#F8F9FB] to-white flex items-end justify-center select-none pt-3 cursor-pointer"
-                      >
-                        <div className="absolute top-4 w-44 h-44 rounded-full bg-jj-pink/[0.06] blur-xl pointer-events-none" />
-
-                        <img
-                          src={member.image}
-                          alt={member.name}
-                          className="w-full h-full object-cover object-top z-0 pointer-events-none transition-transform duration-500 ease-out group-hover:scale-105"
-                          loading={isCenter || Math.abs(diff) <= 1 ? "eager" : "lazy"}
-                          decoding="async"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = '/images/team/YASH.webp';
-                          }}
-                        />
-
-                        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none" />
-                      </div>
-
-                      <div className="p-5 sm:p-6 pt-3 pb-2">
-                        <h3 className="font-display font-black text-xl sm:text-2xl text-[#0B0C10] tracking-tight uppercase leading-tight mb-1">
-                          {member.name}
-                        </h3>
-
-                        <div>
-                          <span className="text-[11px] font-bold tracking-wider text-jj-pink uppercase block">
-                            {member.role}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-5 sm:p-6 pt-0 pb-4">
-                      <div className="pt-3 border-t border-black/[0.07] flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-jj-pink" />
-                          <span className="text-[10px] sm:text-[11px] font-bold text-jj-dark/65 uppercase tracking-wider">
-                            Active on Accounts
-                          </span>
-                        </div>
-
-                        <a
-                          href={member.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-2 rounded-full bg-[#FAF9F6] hover:bg-jj-pink hover:text-white text-jj-dark/70 transition-all duration-200 border border-black/[0.08] shadow-xs"
-                          title={`Connect with ${member.name} on LinkedIn`}
-                        >
-                          <Linkedin className="w-3.5 h-3.5" />
-                        </a>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Pagination Controls */}
-            <div className="flex items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 z-20 relative">
-              <button
-                onClick={prevTeamCard}
-                className="p-2 sm:p-2.5 rounded-full bg-white hover:bg-[#0B0C10] hover:text-[#FFDE00] text-jj-dark border border-black/10 shadow-xs hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
-                title="Previous Team Member"
-              >
-                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-
-              <div className="flex items-center gap-2">
-                {orderedTeam.map((_, dotIdx) => (
-                  <button
-                    key={dotIdx}
-                    onClick={() => setActiveTeamIndex(dotIdx)}
-                    className={`transition-all duration-300 rounded-full cursor-pointer ${
-                      dotIdx === activeTeamIndex
-                        ? 'w-8 sm:w-9 h-2.5 bg-jj-pink shadow-xs'
-                        : 'w-2.5 h-2.5 bg-black/20 hover:bg-black/40'
-                    }`}
-                    aria-label={`Go to slide ${dotIdx + 1}`}
                   />
-                ))}
+                  <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-white via-white/80 to-transparent" />
+                </div>
+
+                <div className="p-5">
+                  <h3 className="font-display font-black text-xl text-[#0B0C10] tracking-tight uppercase leading-tight mb-1">
+                    {member.name}
+                  </h3>
+                  <span className="text-[11px] font-bold tracking-wider text-jj-pink uppercase block mb-2.5">
+                    {member.role}
+                  </span>
+                  {member.bio && (
+                    <p className="text-xs text-jj-dark/70 font-normal leading-relaxed line-clamp-3">
+                      {member.bio}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              <button
-                onClick={nextTeamCard}
-                className="p-2 sm:p-2.5 rounded-full bg-white hover:bg-[#0B0C10] hover:text-[#FFDE00] text-jj-dark border border-black/10 shadow-xs hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
-                title="Next Team Member"
-              >
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </div>
-          </>
-        )}
+              <div className="p-5 pt-0">
+                <div className="pt-3 border-t border-black/[0.07] flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-jj-pink" />
+                    <span className="text-[10px] font-bold text-jj-dark/65 uppercase tracking-wider">
+                      Active Team
+                    </span>
+                  </div>
+                  {member.linkedin && (
+                    <a
+                      href={member.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 rounded-full bg-[#FAF9F6] hover:bg-jj-pink hover:text-white text-jj-dark/70 transition-all duration-200 border border-black/[0.08]"
+                      title={`Connect with ${member.name} on LinkedIn`}
+                    >
+                      <Linkedin className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
 
       </div>
     </section>

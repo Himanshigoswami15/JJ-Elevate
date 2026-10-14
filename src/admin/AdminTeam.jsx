@@ -50,8 +50,35 @@ export default function AdminTeam({ showToast }) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (uploadEvent) => {
-      setFormData(prev => ({ ...prev, img: uploadEvent.target.result }));
-      showToast('Profile image uploaded successfully!');
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 480;
+        let w = img.width;
+        let h = img.height;
+        if (w > h) {
+          if (w > maxDim) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          }
+        } else {
+          if (h > maxDim) {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', 0.85);
+        setFormData(prev => ({ ...prev, img: compressed }));
+        showToast('Profile image uploaded & optimized successfully!');
+      };
+      img.onerror = () => {
+        setFormData(prev => ({ ...prev, img: uploadEvent.target.result }));
+      };
+      img.src = uploadEvent.target.result;
     };
     reader.readAsDataURL(file);
   };
