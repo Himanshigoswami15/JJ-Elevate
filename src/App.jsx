@@ -11,6 +11,7 @@ import ViralReelShowcase from './components/ViralReelShowcase';
 import WhyChooseUs from './components/WhyChooseUs';
 import ClientsMarquee from './components/ClientsMarquee';
 import Testimonials from './components/Testimonials';
+import DreamTeam from './components/DreamTeam';
 import NewsletterCTA from './components/NewsletterCTA';
 import Footer from './components/Footer';
 import ConsultationModal from './components/ConsultationModal';
@@ -247,10 +248,13 @@ export default function App() {
               {/* 7. Why Choose JJ Elevate */}
               <WhyChooseUs onOpenConsultation={handleOpenConsultation} />
 
-              {/* 8. What Our Clients Say */}
+              {/* 8. Meet The Dream Team */}
+              <DreamTeam />
+
+              {/* 9. What Our Clients Say */}
               <Testimonials onOpenConsultation={handleOpenConsultation} />
 
-              {/* 9. Yellow Newsletter Subscription CTA */}
+              {/* 10. Yellow Newsletter Subscription CTA */}
               <NewsletterCTA />
             </main>
           )}

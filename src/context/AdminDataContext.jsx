@@ -326,6 +326,45 @@ export const DEFAULT_ADMIN_DATA = {
       image: '/images/team/PUSHPENDRA.webp',
       active: true,
       linkedin: 'https://www.linkedin.com/'
+    },
+    {
+      id: 'jaideep',
+      name: 'Jaideep Singh Rajpurohit',
+      role: 'GRAPHICS DESIGNER',
+      category: 'CREATIVE',
+      highlightBadge: 'BRAND & VISUAL DESIGN',
+      experience: 'CREATIVE EXCELLENCE',
+      bio: 'Crafts bespoke digital visual assets, luxury marketing collaterals, and high-impact brand identities that elevate hospitality aesthetics and captivate modern travelers.',
+      specialties: ['Brand Identity', 'Social Media Creatives', 'Marketing Collateral'],
+      image: '/images/team/JAIDEEP.webp',
+      active: true,
+      linkedin: 'https://www.linkedin.com/'
+    },
+    {
+      id: 'himanshi',
+      name: 'Himanshi Goswami',
+      role: 'SOFTWARE DEVELOPER & TECH LEAD',
+      category: 'ENGINEERING',
+      highlightBadge: 'FULL-STACK ENGINEER',
+      experience: 'FAST DIRECT ENGINES',
+      bio: 'Architects high-performance booking engines, seamless PMS integrations, and responsive web experiences engineered to maximize direct reservation conversions for luxury hospitality brands.',
+      specialties: ['Direct Booking Engines', 'Full-Stack Architecture', 'Performance Optimization'],
+      image: '/images/team/HIMANSHI.webp',
+      active: true,
+      linkedin: 'https://www.linkedin.com/in/himanshi-goswami-a444a3304'
+    },
+    {
+      id: 'shivani',
+      name: 'Shivani Mehra',
+      role: 'SOCIAL MEDIA MANAGER',
+      category: 'MARKETING',
+      highlightBadge: 'SOCIAL MEDIA STRATEGY',
+      experience: 'VIRAL CAMPAIGNS',
+      bio: 'Orchestrates multi-channel hospitality social media presence, high-impact influencer collaborations, and vibrant community engagement that turn active travelers into loyal direct guests.',
+      specialties: ['Social Media Strategy', 'Influencer Partnerships', 'Community Engagement'],
+      image: '/images/team/SHIVANI.webp',
+      active: true,
+      linkedin: 'https://www.linkedin.com/'
     }
   ],
   testimonials: [
