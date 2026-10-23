@@ -432,6 +432,10 @@ export default function ResultsMetrics({ onOpenConsultation }) {
                     <img
                       src={srv.images.left.url}
                       alt={srv.images.left.caption}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/images/social/social_pool_shoot.jpg';
+                      }}
                       className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
                       loading="lazy"
                     />
@@ -448,6 +452,10 @@ export default function ResultsMetrics({ onOpenConsultation }) {
                     <img
                       src={srv.images.center.url}
                       alt={srv.images.center.caption}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/images/social/social_instagram_feed.jpg';
+                      }}
                       className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
                       loading="lazy"
                     />
@@ -464,6 +472,10 @@ export default function ResultsMetrics({ onOpenConsultation }) {
                     <img
                       src={srv.images.right.url}
                       alt={srv.images.right.caption}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/images/social/social_sunset_production.jpg';
+                      }}
                       className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
                       loading="lazy"
                     />
