@@ -1,7 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { hashPassword, hashPin, generateSessionToken, generateRecoveryCode, getClientDeviceInfo } from '../utils/cryptoSecurity';
 
 const STORAGE_KEY = 'jj_elevate_admin_data_v2';
 const AUTH_KEY = 'jj_elevate_admin_auth_v1';
+const SECURITY_KEY = 'jj_elevate_admin_security_v3';
+const SESSION_KEY = 'jj_elevate_admin_session_v3';
+
+const DEFAULT_SECURITY = {
+  username: 'admin',
+  passwordHash: '',
+  sessionTimeoutMinutes: 30,
+  failedAttempts: 0,
+  lockedUntil: null,
+  lastLoginTime: null,
+  twoFactorEnabled: false,
+  securityPinHash: '',
+  emergencyRecoveryCodeHash: '',
+  auditLogs: [],
+  isLockdownActive: false
+};
 
 export const DEFAULT_ADMIN_DATA = {
   hero: {
@@ -472,8 +489,32 @@ export function AdminDataProvider({ children }) {
     return DEFAULT_ADMIN_DATA;
   });
 
+  const [adminSecurity, setAdminSecurity] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_SECURITY;
+    try {
+      const stored = localStorage.getItem(SECURITY_KEY);
+      if (stored) {
+        return { ...DEFAULT_SECURITY, ...JSON.parse(stored) };
+      }
+    } catch {
+      // fallback
+    }
+    return DEFAULT_SECURITY;
+  });
+
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
     if (typeof window === 'undefined') return false;
+    try {
+      const sessStr = localStorage.getItem(SESSION_KEY);
+      if (sessStr) {
+        const sess = JSON.parse(sessStr);
+        if (sess.token && sess.expiresAt && Number(sess.expiresAt) > Date.now()) {
+          return true;
+        }
+      }
+    } catch {
+      // fallback
+    }
     return localStorage.getItem(AUTH_KEY) === 'true';
   });
 
@@ -506,6 +547,13 @@ export function AdminDataProvider({ children }) {
           console.error('Failed to parse incoming storage update:', err);
         }
       }
+      if (e.key === SECURITY_KEY && e.newValue) {
+        try {
+          setAdminSecurity(JSON.parse(e.newValue));
+        } catch {
+          // ignore
+        }
+      }
     };
 
     const handleCustomSync = (e) => {
@@ -523,24 +571,483 @@ export function AdminDataProvider({ children }) {
     };
   }, []);
 
-  // Auth methods
-  const loginAdmin = (username, password) => {
-    const cleanUser = (username || '').trim().toLowerCase();
-    const cleanPass = (password || '').trim();
-    if ((cleanUser === 'admin' && cleanPass === 'admin123') || (cleanUser === 'jjelevate' && cleanPass === 'elevate2026')) {
-      setIsAdminLoggedIn(true);
+  // Inactivity auto-logout timer check
+  useEffect(() => {
+    if (!isAdminLoggedIn) return;
+
+    const interval = setInterval(() => {
+      try {
+        const sessStr = localStorage.getItem(SESSION_KEY);
+        if (sessStr) {
+          const sess = JSON.parse(sessStr);
+          if (sess.expiresAt && Number(sess.expiresAt) <= Date.now()) {
+            logoutAdmin();
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }, 15000); // Check every 15s
+
+    return () => clearInterval(interval);
+  }, [isAdminLoggedIn]);
+
+  // Security Audit Logging helper
+  const recordAuditLog = (action, details = '', status = 'info') => {
+    const logEntry = {
+      id: 'log-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+      timestamp: new Date().toISOString(),
+      action,
+      details,
+      status, // 'success', 'warning', 'critical', 'info'
+      device: getClientDeviceInfo()
+    };
+    setAdminSecurity(prev => {
+      const updatedLogs = [logEntry, ...(prev.auditLogs || [])].slice(0, 80);
+      const updated = { ...prev, auditLogs: updatedLogs };
       if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(SECURITY_KEY, JSON.stringify(updated));
+        } catch {
+          // ignore
+        }
+      }
+      return updated;
+    });
+  };
+
+  // Auth methods with SHA-256, 2FA, and brute-force defenses
+  const loginAdmin = async (username, password) => {
+    const cleanUser = (username || '').trim();
+    const cleanPass = (password || '').trim();
+
+    // 0. Check emergency lockdown status
+    if (adminSecurity.isLockdownActive) {
+      return {
+        success: false,
+        isLockdown: true,
+        message: 'Portal is currently in Emergency Lockdown. Master authorization required to unlock.'
+      };
+    }
+
+    // 1. Check lockout status
+    if (adminSecurity.lockedUntil && Number(adminSecurity.lockedUntil) > Date.now()) {
+      const remainingSeconds = Math.ceil((Number(adminSecurity.lockedUntil) - Date.now()) / 1000);
+      const remainingMinutes = Math.ceil(remainingSeconds / 60);
+      return {
+        success: false,
+        isLocked: true,
+        remainingMinutes,
+        message: `Account is temporarily locked for security. Please try again in ${remainingMinutes} minute(s).`
+      };
+    }
+
+    const expectedUser = (adminSecurity.username || 'admin').trim();
+    const inputHash = await hashPassword(cleanPass);
+
+    let isMatch = false;
+    if (cleanUser.toLowerCase() === expectedUser.toLowerCase()) {
+      if (adminSecurity.passwordHash) {
+        isMatch = (inputHash === adminSecurity.passwordHash);
+      } else {
+        // Default credentials fallback: admin / admin123 or jjelevate / elevate2026
+        isMatch = (cleanPass === 'admin123' || cleanPass === 'elevate2026');
+      }
+    }
+
+    if (isMatch) {
+      // If 2FA PIN is enabled, require step 2 PIN verification
+      if (adminSecurity.twoFactorEnabled && adminSecurity.securityPinHash) {
+        return {
+          success: false,
+          requires2FA: true,
+          username: expectedUser,
+          message: 'Password accepted. Please provide your 6-digit Master PIN or Recovery Code.'
+        };
+      }
+
+      const sessionToken = generateSessionToken();
+      const timeoutMs = (adminSecurity.sessionTimeoutMinutes || 30) * 60 * 1000;
+      const expiresAt = Date.now() + timeoutMs;
+
+      // Lazily ensure current password is saved as hash if not yet hashed
+      let passHashToStore = adminSecurity.passwordHash;
+      if (!passHashToStore) {
+        passHashToStore = inputHash;
+      }
+
+      const updatedSecurity = {
+        ...adminSecurity,
+        passwordHash: passHashToStore,
+        failedAttempts: 0,
+        lockedUntil: null,
+        lastLoginTime: new Date().toISOString()
+      };
+
+      setAdminSecurity(updatedSecurity);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SECURITY_KEY, JSON.stringify(updatedSecurity));
+        localStorage.setItem(SESSION_KEY, JSON.stringify({
+          token: sessionToken,
+          username: expectedUser,
+          expiresAt
+        }));
         localStorage.setItem(AUTH_KEY, 'true');
       }
+
+      recordAuditLog('Successful Sign-In', `Master Admin "${expectedUser}" authenticated successfully.`, 'success');
+
+      setIsAdminLoggedIn(true);
       return { success: true };
+    } else {
+      const newFailed = (adminSecurity.failedAttempts || 0) + 1;
+      let lockedUntil = null;
+      let isNowLocked = false;
+      let remainingMinutes = 0;
+
+      if (newFailed >= 5) {
+        lockedUntil = Date.now() + 15 * 60 * 1000; // 15-minute lockout
+        isNowLocked = true;
+        remainingMinutes = 15;
+      }
+
+      const updatedSecurity = {
+        ...adminSecurity,
+        failedAttempts: newFailed,
+        lockedUntil
+      };
+
+      setAdminSecurity(updatedSecurity);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SECURITY_KEY, JSON.stringify(updatedSecurity));
+      }
+
+      recordAuditLog(
+        isNowLocked ? 'Account Locked (Brute Force Shield)' : 'Failed Login Attempt',
+        `Failed attempt for user "${cleanUser}". (${newFailed}/5 attempts)`,
+        isNowLocked ? 'critical' : 'warning'
+      );
+
+      if (isNowLocked) {
+        return {
+          success: false,
+          isLocked: true,
+          remainingMinutes,
+          message: 'Account locked for 15 minutes due to 5 consecutive failed login attempts.'
+        };
+      }
+
+      const remainingAttempts = Math.max(0, 5 - newFailed);
+      return {
+        success: false,
+        remainingAttempts,
+        message: `Invalid username or password. ${remainingAttempts} attempt(s) remaining before account lockout.`
+      };
     }
-    return { success: false, message: 'Invalid username or password. Please try again.' };
+  };
+
+  // 2FA PIN / Recovery Code verification
+  const verify2FALogin = async (pinOrCode) => {
+    const cleanInput = (pinOrCode || '').trim();
+    if (!cleanInput) {
+      return { success: false, message: 'Please enter your 6-digit Security PIN or Backup Recovery Code.' };
+    }
+
+    // Check lockout status
+    if (adminSecurity.lockedUntil && Number(adminSecurity.lockedUntil) > Date.now()) {
+      const remainingSeconds = Math.ceil((Number(adminSecurity.lockedUntil) - Date.now()) / 1000);
+      const remainingMinutes = Math.ceil(remainingSeconds / 60);
+      return {
+        success: false,
+        isLocked: true,
+        remainingMinutes,
+        message: `Account is temporarily locked. Please try again in ${remainingMinutes} minute(s).`
+      };
+    }
+
+    const pinHash = await hashPin(cleanInput);
+    const codeHash = await hashPassword(cleanInput.toUpperCase());
+
+    const isPinMatch = adminSecurity.securityPinHash && (pinHash === adminSecurity.securityPinHash);
+    const isCodeMatch = adminSecurity.emergencyRecoveryCodeHash && (codeHash === adminSecurity.emergencyRecoveryCodeHash);
+
+    if (isPinMatch || isCodeMatch) {
+      const sessionToken = generateSessionToken();
+      const timeoutMs = (adminSecurity.sessionTimeoutMinutes || 30) * 60 * 1000;
+      const expiresAt = Date.now() + timeoutMs;
+      const expectedUser = (adminSecurity.username || 'admin').trim();
+
+      const updatedSecurity = {
+        ...adminSecurity,
+        failedAttempts: 0,
+        lockedUntil: null,
+        lastLoginTime: new Date().toISOString()
+      };
+
+      setAdminSecurity(updatedSecurity);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SECURITY_KEY, JSON.stringify(updatedSecurity));
+        localStorage.setItem(SESSION_KEY, JSON.stringify({
+          token: sessionToken,
+          username: expectedUser,
+          expiresAt
+        }));
+        localStorage.setItem(AUTH_KEY, 'true');
+      }
+
+      recordAuditLog(
+        isCodeMatch ? 'Sign-In with Emergency Recovery Code' : 'Sign-In with 2FA Master PIN',
+        `Two-factor authentication verified for "${expectedUser}".`,
+        'success'
+      );
+
+      setIsAdminLoggedIn(true);
+      return { success: true };
+    } else {
+      const newFailed = (adminSecurity.failedAttempts || 0) + 1;
+      let lockedUntil = null;
+      let isNowLocked = false;
+      let remainingMinutes = 0;
+
+      if (newFailed >= 5) {
+        lockedUntil = Date.now() + 15 * 60 * 1000;
+        isNowLocked = true;
+        remainingMinutes = 15;
+      }
+
+      const updatedSecurity = {
+        ...adminSecurity,
+        failedAttempts: newFailed,
+        lockedUntil
+      };
+
+      setAdminSecurity(updatedSecurity);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SECURITY_KEY, JSON.stringify(updatedSecurity));
+      }
+
+      recordAuditLog(
+        'Failed 2FA Attempt',
+        `Incorrect PIN or Recovery Code provided. (${newFailed}/5 attempts)`,
+        'warning'
+      );
+
+      if (isNowLocked) {
+        return {
+          success: false,
+          isLocked: true,
+          remainingMinutes,
+          message: 'Account locked for 15 minutes due to 5 consecutive failed attempts.'
+        };
+      }
+
+      const remainingAttempts = Math.max(0, 5 - newFailed);
+      return {
+        success: false,
+        remainingAttempts,
+        message: `Invalid 6-digit PIN or Recovery Code. ${remainingAttempts} attempt(s) remaining before lockout.`
+      };
+    }
   };
 
   const logoutAdmin = () => {
     setIsAdminLoggedIn(false);
     if (typeof window !== 'undefined') {
+      localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(AUTH_KEY);
+    }
+    recordAuditLog('Session Terminated', 'Administrator logged out securely.', 'info');
+  };
+
+  const refreshSession = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const sessStr = localStorage.getItem(SESSION_KEY);
+      if (sessStr) {
+        const sess = JSON.parse(sessStr);
+        const timeoutMs = (adminSecurity.sessionTimeoutMinutes || 30) * 60 * 1000;
+        sess.expiresAt = Date.now() + timeoutMs;
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sess));
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const resetLockoutCounter = () => {
+    const updated = {
+      ...adminSecurity,
+      failedAttempts: 0,
+      lockedUntil: null
+    };
+    setAdminSecurity(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SECURITY_KEY, JSON.stringify(updated));
+    }
+    recordAuditLog('Lockout Shield Reset', 'Failed attempts counter reset to zero by admin.', 'info');
+  };
+
+  const updateAdminCredentials = async ({ currentPassword, newUsername, newPassword, sessionTimeoutMinutes }) => {
+    // If updating timeout only:
+    if (sessionTimeoutMinutes && !newUsername && !newPassword && !currentPassword) {
+      const updated = {
+        ...adminSecurity,
+        sessionTimeoutMinutes: Number(sessionTimeoutMinutes)
+      };
+      setAdminSecurity(updated);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SECURITY_KEY, JSON.stringify(updated));
+      }
+      refreshSession();
+      recordAuditLog('Policy Update', `Session idle timeout updated to ${sessionTimeoutMinutes} minutes.`, 'info');
+      return { success: true };
+    }
+
+    // Verify current password
+    const expectedPassHash = adminSecurity.passwordHash;
+    const inputHash = await hashPassword((currentPassword || '').trim());
+    let isCurrentValid = false;
+
+    if (expectedPassHash) {
+      isCurrentValid = (inputHash === expectedPassHash);
+    } else {
+      isCurrentValid = (currentPassword === 'admin123' || currentPassword === 'elevate2026');
+    }
+
+    if (!isCurrentValid) {
+      return { success: false, message: 'Current password does not match.' };
+    }
+
+    let updatedHash = adminSecurity.passwordHash;
+    if (newPassword && newPassword.trim()) {
+      updatedHash = await hashPassword(newPassword.trim());
+    }
+
+    const updated = {
+      ...adminSecurity,
+      username: newUsername ? newUsername.trim() : adminSecurity.username,
+      passwordHash: updatedHash,
+      sessionTimeoutMinutes: sessionTimeoutMinutes ? Number(sessionTimeoutMinutes) : adminSecurity.sessionTimeoutMinutes
+    };
+
+    setAdminSecurity(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SECURITY_KEY, JSON.stringify(updated));
+    }
+    refreshSession();
+    recordAuditLog('Credentials Changed', `Admin username/password updated with SHA-256 cryptographic protection.`, 'info');
+    return { success: true };
+  };
+
+  // 2FA Configuration
+  const configureTwoFactor = async ({ currentPassword, enable, pin, recoveryCode }) => {
+    const cleanPass = (currentPassword || '').trim();
+    const inputHash = await hashPassword(cleanPass);
+    let isCurrentValid = false;
+
+    if (adminSecurity.passwordHash) {
+      isCurrentValid = (inputHash === adminSecurity.passwordHash);
+    } else {
+      isCurrentValid = (cleanPass === 'admin123' || cleanPass === 'elevate2026');
+    }
+
+    if (!isCurrentValid) {
+      return { success: false, message: 'Current password does not match. Authorization required.' };
+    }
+
+    let pinHash = adminSecurity.securityPinHash;
+    let codeHash = adminSecurity.emergencyRecoveryCodeHash;
+
+    if (enable) {
+      if (!pin || pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+        return { success: false, message: 'Please provide a valid 6-digit numeric PIN.' };
+      }
+      pinHash = await hashPin(pin);
+      if (recoveryCode) {
+        codeHash = await hashPassword(recoveryCode.trim().toUpperCase());
+      }
+    }
+
+    const updatedSecurity = {
+      ...adminSecurity,
+      twoFactorEnabled: !!enable,
+      securityPinHash: enable ? pinHash : '',
+      emergencyRecoveryCodeHash: enable ? codeHash : ''
+    };
+
+    setAdminSecurity(updatedSecurity);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SECURITY_KEY, JSON.stringify(updatedSecurity));
+    }
+
+    recordAuditLog(
+      enable ? '2FA Protection Enabled' : '2FA Protection Disabled',
+      enable ? '6-digit Master Security PIN and Backup Recovery Code activated.' : 'Two-factor authentication disabled.',
+      enable ? 'success' : 'warning'
+    );
+
+    return { success: true };
+  };
+
+  // Emergency Lockdown actions
+  const triggerEmergencyLockdown = () => {
+    const updatedSecurity = {
+      ...adminSecurity,
+      isLockdownActive: true
+    };
+    setAdminSecurity(updatedSecurity);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SECURITY_KEY, JSON.stringify(updatedSecurity));
+    }
+    recordAuditLog('EMERGENCY LOCKDOWN ACTIVATED', 'Admin console locked down. All active sessions immediately invalidated.', 'critical');
+    logoutAdmin();
+  };
+
+  const disableEmergencyLockdown = async (masterPassword) => {
+    const cleanPass = (masterPassword || '').trim();
+    const inputHash = await hashPassword(cleanPass);
+    let isCurrentValid = false;
+
+    if (adminSecurity.passwordHash) {
+      isCurrentValid = (inputHash === adminSecurity.passwordHash);
+    } else {
+      isCurrentValid = (cleanPass === 'admin123' || cleanPass === 'elevate2026');
+    }
+
+    if (!isCurrentValid) {
+      return { success: false, message: 'Invalid master password. Cannot unlock portal.' };
+    }
+
+    const updatedSecurity = {
+      ...adminSecurity,
+      isLockdownActive: false,
+      failedAttempts: 0,
+      lockedUntil: null
+    };
+    setAdminSecurity(updatedSecurity);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SECURITY_KEY, JSON.stringify(updatedSecurity));
+    }
+    recordAuditLog('Lockdown Deactivated', 'Emergency lockdown lifted with verified master password.', 'info');
+    return { success: true };
+  };
+
+  const clearAuditLogs = () => {
+    const initialLog = {
+      id: 'log-' + Date.now(),
+      timestamp: new Date().toISOString(),
+      action: 'Audit History Reset',
+      details: 'Audit logs cleared by master administrator.',
+      status: 'info',
+      device: getClientDeviceInfo()
+    };
+    const updated = {
+      ...adminSecurity,
+      auditLogs: [initialLog]
+    };
+    setAdminSecurity(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SECURITY_KEY, JSON.stringify(updated));
     }
   };
 
@@ -905,7 +1412,18 @@ export function AdminDataProvider({ children }) {
         markInquiryStatus,
         exportData,
         importData,
-        resetToDefaults
+        resetToDefaults,
+        adminSecuritySettings: adminSecurity,
+        isUsingDefaultPassword: !adminSecurity.passwordHash,
+        updateAdminCredentials,
+        resetLockoutCounter,
+        refreshSession,
+        verify2FALogin,
+        configureTwoFactor,
+        triggerEmergencyLockdown,
+        disableEmergencyLockdown,
+        clearAuditLogs,
+        recordAuditLog
       }}
     >
       {children}

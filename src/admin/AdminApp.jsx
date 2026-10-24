@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdminData } from '../context/AdminDataContext';
 import AdminLogin from './AdminLogin';
 import AdminDashboard from './AdminDashboard';
 import AdminHero from './AdminHero';
 import AdminServices from './AdminServices';
+import AdminBrands from './AdminBrands';
 import AdminCaseStudies from './AdminCaseStudies';
 import AdminReels from './AdminReels';
 import AdminTeam from './AdminTeam';
 import AdminTestimonials from './AdminTestimonials';
 import AdminInquiries from './AdminInquiries';
 import AdminContact from './AdminContact';
-import AdminBrands from './AdminBrands';
+import AdminSecurity from './AdminSecurity';
 import './admin.css';
 
 const TAB_TITLES = {
@@ -23,7 +24,8 @@ const TAB_TITLES = {
   team: 'Core Team & Co-Founders',
   testimonials: 'What Our Clients Say',
   inquiries: 'Inquiries & Leads Inbox',
-  contact: 'Contact Info & Social'
+  contact: 'Contact Info & Social',
+  security: 'Security & Access Control'
 };
 
 export default function AdminApp({ onNavigateHome }) {
@@ -33,12 +35,41 @@ export default function AdminApp({ onNavigateHome }) {
     logoutAdmin,
     resetToDefaults,
     exportData,
-    importData
+    importData,
+    refreshSession,
+    isUsingDefaultPassword,
+    adminSecuritySettings
   } = useAdminData();
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [toastMessage, setToastMessage] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // User activity tracker: refreshes session on user interaction
+  useEffect(() => {
+    if (!isAdminLoggedIn) return;
+
+    let lastRefreshed = Date.now();
+    const handleActivity = () => {
+      const now = Date.now();
+      if (now - lastRefreshed > 60000) { // refresh once per minute on activity
+        lastRefreshed = now;
+        if (refreshSession) refreshSession();
+      }
+    };
+
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('click', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+
+    return () => {
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('click', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+    };
+  }, [isAdminLoggedIn, refreshSession]);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -96,6 +127,8 @@ export default function AdminApp({ onNavigateHome }) {
         return <AdminInquiries showToast={showToast} />;
       case 'contact':
         return <AdminContact showToast={showToast} />;
+      case 'security':
+        return <AdminSecurity showToast={showToast} />;
       default:
         return <AdminDashboard onNavigate={(tab) => setActiveTab(tab)} />;
     }
@@ -214,6 +247,13 @@ export default function AdminApp({ onNavigateHome }) {
               <span>Contact & Social</span>
             </button>
           </li>
+
+          <li className={`adm-nav-item ${activeTab === 'security' ? 'active' : ''}`}>
+            <button type="button" onClick={() => { setActiveTab('security'); setSidebarOpen(false); }}>
+              <i className="bi bi-shield-lock-fill"></i>
+              <span>Security & Access</span>
+            </button>
+          </li>
         </ul>
 
         {/* Sidebar Footer */}
@@ -304,6 +344,22 @@ export default function AdminApp({ onNavigateHome }) {
           </div>
 
           <div className="adm-topbar-right">
+            {/* Security Status Badge */}
+            <div
+              className="adm-sync-badge"
+              style={{
+                cursor: 'pointer',
+                background: adminSecuritySettings?.twoFactorEnabled ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.08)',
+                borderColor: adminSecuritySettings?.twoFactorEnabled ? 'rgba(16, 185, 129, 0.3)' : 'rgba(59, 130, 246, 0.2)',
+                color: adminSecuritySettings?.twoFactorEnabled ? '#059669' : '#2563eb'
+              }}
+              onClick={() => setActiveTab('security')}
+              title="Click to view Security & Access Control"
+            >
+              <i className={`bi ${adminSecuritySettings?.twoFactorEnabled ? 'bi-shield-lock-fill' : 'bi-shield-check'}`}></i>
+              <span>{adminSecuritySettings?.twoFactorEnabled ? '2FA Protected' : 'SHA-256 Protected'}</span>
+            </div>
+
             <div className="adm-sync-badge">
               <span className="adm-sync-dot"></span>
               <span>Live Site Synchronized</span>
@@ -348,6 +404,44 @@ export default function AdminApp({ onNavigateHome }) {
             )}
           </div>
         </header>
+
+        {/* High-Priority Security Alert if Default Credentials are active */}
+        {isUsingDefaultPassword && (
+          <div style={{
+            background: '#fffbeb',
+            borderBottom: '1px solid #fde68a',
+            padding: '10px 1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.84rem',
+            color: '#92400e',
+            gap: '12px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <i className="bi bi-shield-exclamation" style={{ fontSize: '1.15rem', color: '#d97706' }}></i>
+              <span>
+                <strong>Security Action Recommended:</strong> Your admin portal is currently using default credentials. Update your master password and enable 2FA to safeguard portal data.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab('security')}
+              className="adm-btn adm-btn-sm"
+              style={{
+                background: '#d97706',
+                color: '#ffffff',
+                border: 'none',
+                fontWeight: 600,
+                padding: '4px 12px',
+                fontSize: '0.78rem'
+              }}
+            >
+              Open Security Settings →
+            </button>
+          </div>
+        )}
 
         {/* Content Container */}
         <main className="adm-content-container">

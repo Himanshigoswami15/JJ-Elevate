@@ -2,7 +2,12 @@ import React from 'react';
 import { useAdminData } from '../context/AdminDataContext';
 
 export default function AdminDashboard({ onNavigate }) {
-  const { data, markInquiryStatus } = useAdminData();
+  const {
+    data,
+    markInquiryStatus,
+    isUsingDefaultPassword,
+    adminSecuritySettings
+  } = useAdminData();
 
   const servicesCount = data.services?.length || 0;
   const caseStudiesCount = data.caseStudies?.length || 0;
@@ -339,27 +344,57 @@ export default function AdminDashboard({ onNavigate }) {
               <i className="bi bi-shield-check" style={{ color: '#10b981' }}></i>
               <span>System & Data Security</span>
             </h3>
+            <span style={{
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              padding: '2px 8px',
+              borderRadius: '999px',
+              background: isUsingDefaultPassword ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+              color: isUsingDefaultPassword ? '#dc2626' : '#059669'
+            }}>
+              {isUsingDefaultPassword ? 'Password Action Needed' : 'Protected'}
+            </span>
           </div>
           <p style={{ fontSize: '0.86rem', color: 'var(--adm-text-secondary)', lineHeight: 1.6 }}>
             Every modification is stored with client-side reactive state and synchronized locally in your browser storage. You can export complete snapshots to JSON backups or restore factory showcase settings anytime.
           </p>
           <div style={{
-            background: '#f8fafc',
-            border: '1px solid var(--adm-border)',
+            background: isUsingDefaultPassword ? '#fffbeb' : '#f8fafc',
+            border: isUsingDefaultPassword ? '1px solid #fde68a' : '1px solid var(--adm-border)',
             borderRadius: '8px',
             padding: '12px 16px',
             marginTop: '1rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px'
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexWrap: 'wrap'
           }}>
-            <i className="bi bi-cloud-arrow-down-fill" style={{ fontSize: '1.4rem', color: 'var(--adm-pink)' }}></i>
-            <div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>Zero Data Loss Backup</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--adm-text-secondary)' }}>
-                Download a JSON replica of all inquiries and customized copy in 1 click.
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <i className={`bi ${isUsingDefaultPassword ? 'bi-shield-exclamation' : 'bi-shield-lock-fill'}`} style={{ fontSize: '1.4rem', color: isUsingDefaultPassword ? '#d97706' : '#10b981' }}></i>
+              <div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: isUsingDefaultPassword ? '#92400e' : 'inherit' }}>
+                  {isUsingDefaultPassword ? 'Default Password Active' : 'SHA-256 Guard Active'}
+                  {adminSecuritySettings?.twoFactorEnabled && (
+                    <span style={{ marginLeft: '8px', fontSize: '0.72rem', color: '#2563eb', background: 'rgba(37, 99, 235, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                      2FA Enforced
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: '0.78rem', color: isUsingDefaultPassword ? '#b45309' : 'var(--adm-text-secondary)' }}>
+                  {isUsingDefaultPassword
+                    ? 'Anyone with default credentials can log in. Configure a custom password.'
+                    : `Brute-force shield (${adminSecuritySettings?.failedAttempts || 0}/5 attempts) & ${adminSecuritySettings?.sessionTimeoutMinutes || 30}m auto-logout active.`}
+                </div>
               </div>
             </div>
+            <button
+              type="button"
+              className={`adm-btn adm-btn-sm ${isUsingDefaultPassword ? 'adm-btn-primary' : 'adm-btn-secondary'}`}
+              onClick={() => onNavigate('security')}
+            >
+              Security Settings →
+            </button>
           </div>
         </div>
       </div>
