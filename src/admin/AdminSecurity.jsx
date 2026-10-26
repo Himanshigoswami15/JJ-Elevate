@@ -16,8 +16,25 @@ export default function AdminSecurity({ showToast }) {
     triggerEmergencyLockdown,
     clearAuditLogs,
     resetLockoutCounter,
-    logoutAdmin
+    logoutAdmin,
+    cloudSyncStatus,
+    lastCloudSyncTime,
+    syncToCloud,
+    isCloudConfigured,
+    getSupabaseConfig,
+    saveSupabaseConfig,
+    clearSupabaseConfig,
+    testSupabaseConnection
   } = useAdminData();
+
+  // Supabase Cloud Configuration state
+  const [supabaseUrl, setSupabaseUrl] = useState(() => getSupabaseConfig().url || '');
+  const [supabaseAnonKey, setSupabaseAnonKey] = useState(() => getSupabaseConfig().anonKey || '');
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionResult, setConnectionResult] = useState(null);
+  const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
+  const [showSqlSetup, setShowSqlSetup] = useState(!isCloudConfigured);
 
   // Master credentials state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -165,6 +182,84 @@ export default function AdminSecurity({ showToast }) {
     } catch {
       setIsUpdatingTimeout(false);
     }
+  };
+
+  const handleSaveSupabaseConfig = async (e) => {
+    e.preventDefault();
+    setConnectionResult(null);
+    saveSupabaseConfig({ url: supabaseUrl, anonKey: supabaseAnonKey });
+    if (showToast) showToast('Supabase connection details saved!');
+    handleTestConnection();
+  };
+
+  const handleTestConnection = async () => {
+    setTestingConnection(true);
+    setConnectionResult(null);
+    saveSupabaseConfig({ url: supabaseUrl, anonKey: supabaseAnonKey });
+    const res = await testSupabaseConnection();
+    setTestingConnection(false);
+    setConnectionResult(res);
+    if (res.success && showToast) {
+      showToast('Connected to Supabase PostgreSQL cloud!');
+    }
+  };
+
+  const handleManualPushToCloud = async () => {
+    setIsSyncingCloud(true);
+    if (showToast) showToast('Pushing website data to Supabase cloud...');
+    const res = await syncToCloud();
+    setIsSyncingCloud(false);
+    if (res.success) {
+      if (showToast) showToast('All website data successfully synced to Cloud!');
+    } else {
+      if (showToast) showToast(`Cloud push failed: ${res.message}`);
+    }
+  };
+
+  const handleDisconnectSupabase = () => {
+    if (window.confirm('Disconnect Supabase? The admin portal will revert to local browser storage only.')) {
+      clearSupabaseConfig();
+      setSupabaseUrl('');
+      setSupabaseAnonKey('');
+      setConnectionResult(null);
+      if (showToast) showToast('Supabase disconnected. Using local storage.');
+    }
+  };
+
+  const SQL_SNIPPET = `-- 1. Create table for global website content
+create table if not exists site_content (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 2. Allow public read and write access
+alter table site_content enable row level security;
+drop policy if exists "Allow public read on site_content" on site_content;
+create policy "Allow public read on site_content" on site_content for select using (true);
+
+drop policy if exists "Allow all updates on site_content" on site_content;
+create policy "Allow all updates on site_content" on site_content for all using (true) with check (true);
+
+-- 3. Storage bucket for team photos and media
+insert into storage.buckets (id, name, public)
+values ('media', 'media', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "Public Access" on storage.objects;
+create policy "Public Access" on storage.objects for select using (bucket_id = 'media');
+
+drop policy if exists "Public Upload" on storage.objects;
+create policy "Public Upload" on storage.objects for insert with check (bucket_id = 'media');
+
+drop policy if exists "Public Update" on storage.objects;
+create policy "Public Update" on storage.objects for update using (bucket_id = 'media');`;
+
+  const handleCopySql = () => {
+    navigator.clipboard.writeText(SQL_SNIPPET);
+    setCopiedSql(true);
+    if (showToast) showToast('SQL setup script copied to clipboard!');
+    setTimeout(() => setCopiedSql(false), 3000);
   };
 
   const handleCopyRecoveryCode = () => {
@@ -840,6 +935,216 @@ export default function AdminSecurity({ showToast }) {
           )}
         </div>
 
+      </div>
+
+      {/* CARD: Centralized Cloud Database & Multi-System Synchronization (Supabase) */}
+      <div className="adm-card" style={{ padding: '1.75rem', marginBottom: '1.5rem', border: isCloudConfigured ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid #fde68a' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
+              background: isCloudConfigured ? 'rgba(16, 185, 129, 0.12)' : 'rgba(37, 99, 235, 0.1)',
+              color: isCloudConfigured ? '#10b981' : '#2563eb',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.25rem'
+            }}>
+              <i className="bi bi-cloud-check-fill"></i>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700 }}>
+                  Centralized Cloud Database & Storage (Supabase)
+                </h3>
+                <span style={{
+                  fontSize: '0.74rem',
+                  fontWeight: 700,
+                  padding: '3px 10px',
+                  borderRadius: '999px',
+                  background: isCloudConfigured ? 'rgba(16, 185, 129, 0.12)' : '#fef3c7',
+                  color: isCloudConfigured ? '#059669' : '#b45309',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <i className={`bi ${isCloudConfigured ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'}`}></i>
+                  {isCloudConfigured ? 'Cloud Sync Active' : 'Local Only (Action Needed)'}
+                </span>
+              </div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-secondary)' }}>
+                Sync team members, photos, and website content globally across all computers, phones, and live visitors in real time.
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            {isCloudConfigured && (
+              <button
+                type="button"
+                className="adm-btn adm-btn-primary adm-btn-sm"
+                onClick={handleManualPushToCloud}
+                disabled={isSyncingCloud}
+                title="Force push current website content to Supabase Cloud"
+              >
+                <i className={isSyncingCloud ? 'spinner-border spinner-border-sm' : 'bi bi-cloud-arrow-up-fill'}></i>
+                <span>{isSyncingCloud ? 'Pushing Data...' : 'Sync All Data to Cloud Now'}</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="adm-btn adm-btn-secondary adm-btn-sm"
+              onClick={() => setShowSqlSetup(!showSqlSetup)}
+            >
+              <i className="bi bi-code-slash"></i>
+              <span>{showSqlSetup ? 'Hide SQL Script' : 'View SQL Setup'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Status result banner */}
+        {connectionResult && (
+          <div style={{
+            background: connectionResult.success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+            border: connectionResult.success ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+            color: connectionResult.success ? '#059669' : '#dc2626',
+            padding: '10px 14px',
+            borderRadius: '8px',
+            fontSize: '0.84rem',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <i className={`bi ${connectionResult.success ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'}`}></i>
+            <span>{connectionResult.message}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSaveSupabaseConfig}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+            <div className="adm-form-group" style={{ margin: 0 }}>
+              <label className="adm-label">Supabase Project URL</label>
+              <input
+                type="url"
+                className="adm-input"
+                placeholder="https://your-project.supabase.co"
+                value={supabaseUrl}
+                onChange={(e) => setSupabaseUrl(e.target.value)}
+                required
+              />
+              <span style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', display: 'block', marginTop: '4px' }}>
+                From Supabase Dashboard → Settings → API → Project URL
+              </span>
+            </div>
+
+            <div className="adm-form-group" style={{ margin: 0 }}>
+              <label className="adm-label">Supabase Anon Public API Key</label>
+              <input
+                type="text"
+                className="adm-input"
+                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                value={supabaseAnonKey}
+                onChange={(e) => setSupabaseAnonKey(e.target.value)}
+                required
+              />
+              <span style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', display: 'block', marginTop: '4px' }}>
+                From Supabase Dashboard → Settings → API → Project API Keys (anon public)
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <button
+              type="submit"
+              className="adm-btn adm-btn-primary"
+              disabled={testingConnection}
+            >
+              <i className="bi bi-save-fill"></i>
+              <span>Save & Connect Supabase</span>
+            </button>
+
+            <button
+              type="button"
+              className="adm-btn adm-btn-secondary"
+              onClick={handleTestConnection}
+              disabled={testingConnection || !supabaseUrl || !supabaseAnonKey}
+            >
+              {testingConnection ? (
+                <>
+                  <span className="spinner-border spinner-border-sm" role="status"></span>
+                  <span>Testing Connection...</span>
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-lightning-charge-fill"></i>
+                  <span>Test Connection</span>
+                </>
+              )}
+            </button>
+
+            {isCloudConfigured && (
+              <button
+                type="button"
+                className="adm-btn adm-btn-text"
+                onClick={handleDisconnectSupabase}
+                style={{ color: '#ef4444', marginLeft: 'auto' }}
+              >
+                <i className="bi bi-x-circle"></i>
+                <span>Disconnect Supabase</span>
+              </button>
+            )}
+          </div>
+        </form>
+
+        {/* Collapsible SQL Setup Guide */}
+        {showSqlSetup && (
+          <div style={{
+            marginTop: '1.25rem',
+            background: '#0f172a',
+            color: '#e2e8f0',
+            borderRadius: '10px',
+            padding: '1.25rem',
+            fontSize: '0.82rem'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div>
+                <strong style={{ color: '#38bdf8', fontSize: '0.88rem' }}>
+                  <i className="bi bi-terminal-fill"></i> Quick 1-Minute Supabase Database Setup
+                </strong>
+                <span style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>
+                  Paste this script into your Supabase Dashboard → <strong>SQL Editor</strong> → Run. It creates the table and storage bucket for photos!
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopySql}
+                className="adm-btn adm-btn-secondary adm-btn-sm"
+                style={{ background: '#1e293b', borderColor: '#334155', color: '#fff' }}
+              >
+                <i className={`bi ${copiedSql ? 'bi-check' : 'bi-clipboard'}`}></i>
+                <span>{copiedSql ? 'Copied!' : 'Copy SQL Script'}</span>
+              </button>
+            </div>
+
+            <pre style={{
+              margin: 0,
+              padding: '12px',
+              background: '#020617',
+              borderRadius: '6px',
+              fontFamily: 'monospace',
+              fontSize: '0.78rem',
+              color: '#a5f3fc',
+              overflowX: 'auto',
+              maxHeight: '220px'
+            }}>
+              {SQL_SNIPPET}
+            </pre>
+          </div>
+        )}
       </div>
 
       {/* CARD 5: Security Activity & Audit Trail */}

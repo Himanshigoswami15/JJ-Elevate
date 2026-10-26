@@ -1,5 +1,15 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { hashPassword, hashPin, generateSessionToken, generateRecoveryCode, getClientDeviceInfo } from '../utils/cryptoSecurity';
+import {
+  fetchRemoteContent,
+  saveRemoteContent,
+  isSupabaseConfigured,
+  getSupabaseClient,
+  getSupabaseConfig,
+  saveSupabaseConfig,
+  clearSupabaseConfig,
+  testSupabaseConnection
+} from '../lib/supabase';
 
 const STORAGE_KEY = 'jj_elevate_admin_data_v2';
 const AUTH_KEY = 'jj_elevate_admin_auth_v1';
@@ -518,6 +528,126 @@ export function AdminDataProvider({ children }) {
     return localStorage.getItem(AUTH_KEY) === 'true';
   });
 
+  // Cloud Sync state (Supabase)
+  const [cloudSyncStatus, setCloudSyncStatus] = useState('checking'); // 'synced' | 'local_only' | 'syncing' | 'error'
+  const [lastCloudSyncTime, setLastCloudSyncTime] = useState(null);
+  const syncTimeoutRef = useRef(null);
+
+  // Initial cloud fetch on mount (so any visitor or device pulls the latest global content)
+  useEffect(() => {
+    let isMounted = true;
+    async function initCloudSync() {
+      if (!isSupabaseConfigured()) {
+        setCloudSyncStatus('local_only');
+        return;
+      }
+      setCloudSyncStatus('syncing');
+      try {
+        const remote = await fetchRemoteContent();
+        if (!isMounted) return;
+        if (remote && remote.content) {
+          setData(prev => ({
+            ...prev,
+            ...remote.content,
+            hero: { ...prev.hero, ...(remote.content.hero || {}) },
+            growthServicesHeader: { ...prev.growthServicesHeader, ...(remote.content.growthServicesHeader || {}) },
+            services: remote.content.services || prev.services,
+            brands: remote.content.brands || prev.brands,
+            caseStudies: remote.content.caseStudies || prev.caseStudies,
+            reels: { ...prev.reels, ...(remote.content.reels || {}) },
+            teamMembers: remote.content.teamMembers || prev.teamMembers,
+            testimonials: remote.content.testimonials || prev.testimonials,
+            contact: {
+              ...prev.contact,
+              ...(remote.content.contact || {}),
+              social: { ...prev.contact.social, ...(remote.content.contact?.social || {}) },
+              inquiries: remote.content.contact?.inquiries || prev.contact.inquiries
+            }
+          }));
+          setCloudSyncStatus('synced');
+          setLastCloudSyncTime(remote.updatedAt || new Date().toISOString());
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(remote.content));
+          } catch {
+            // ignore
+          }
+        } else {
+          setCloudSyncStatus('synced');
+        }
+      } catch (err) {
+        console.warn('Initial Supabase fetch failed:', err);
+        if (isMounted) setCloudSyncStatus('error');
+      }
+    }
+    initCloudSync();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Real-time listener for multi-device sync across open browsers
+  useEffect(() => {
+    const client = getSupabaseClient();
+    if (!client) return;
+
+    let channel = null;
+    try {
+      channel = client
+        .channel('site_content_realtime')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'site_content', filter: 'id=eq.main' },
+          (payload) => {
+            if (payload.new && payload.new.data) {
+              const incoming = payload.new.data;
+              setData(prev => ({
+                ...prev,
+                ...incoming,
+                teamMembers: incoming.teamMembers || prev.teamMembers
+              }));
+              setCloudSyncStatus('synced');
+              setLastCloudSyncTime(payload.new.updated_at || new Date().toISOString());
+              try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(incoming));
+              } catch {
+                // ignore
+              }
+            }
+          }
+        )
+        .subscribe();
+    } catch (err) {
+      console.warn('Supabase realtime subscription error:', err);
+    }
+
+    return () => {
+      if (channel && client) {
+        client.removeChannel(channel);
+      }
+    };
+  }, []);
+
+  // Explicit Save to Cloud function
+  const syncToCloud = async (overrideData = null) => {
+    if (!isSupabaseConfigured()) {
+      return {
+        success: false,
+        isLocalOnly: true,
+        message: 'Supabase is not connected yet. Changes are saved locally on this browser.'
+      };
+    }
+    setCloudSyncStatus('syncing');
+    const dataToSave = overrideData || data;
+    const res = await saveRemoteContent(dataToSave);
+    if (res.success) {
+      setCloudSyncStatus('synced');
+      setLastCloudSyncTime(res.timestamp || new Date().toISOString());
+      recordAuditLog('Cloud Data Synchronized', 'Website data published to Supabase PostgreSQL cloud.', 'success');
+      return { success: true };
+    } else {
+      setCloudSyncStatus('error');
+      return { success: false, message: res.message };
+    }
+  };
+
   // Sync state to localStorage whenever data changes and dispatch sync event
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -528,7 +658,15 @@ export function AdminDataProvider({ children }) {
         console.error('Failed to save admin data to localStorage:', e);
       }
     }
-  }, [data]);
+
+    // Auto-sync to Supabase cloud if admin is logged in and Supabase is configured
+    if (isAdminLoggedIn && isSupabaseConfigured()) {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+      syncTimeoutRef.current = setTimeout(() => {
+        syncToCloud(data);
+      }, 2500); // 2.5s debounce
+    }
+  }, [data, isAdminLoggedIn]);
 
   // Listen for storage changes from other tabs or windows
   useEffect(() => {
@@ -1423,7 +1561,15 @@ export function AdminDataProvider({ children }) {
         triggerEmergencyLockdown,
         disableEmergencyLockdown,
         clearAuditLogs,
-        recordAuditLog
+        recordAuditLog,
+        cloudSyncStatus,
+        lastCloudSyncTime,
+        syncToCloud,
+        isCloudConfigured: isSupabaseConfigured(),
+        getSupabaseConfig,
+        saveSupabaseConfig,
+        clearSupabaseConfig,
+        testSupabaseConnection
       }}
     >
       {children}

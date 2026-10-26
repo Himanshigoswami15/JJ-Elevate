@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAdminData } from '../context/AdminDataContext';
+import { uploadMediaFile, isSupabaseConfigured } from '../lib/supabase';
 
 const TEAM_AVATAR_PRESETS = [
   { label: 'Jayvardhan Joshi', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=500&auto=format&fit=crop' },
@@ -12,6 +13,7 @@ export default function AdminTeam({ showToast }) {
   const { data, addTeamMember, updateTeamMember, deleteTeamMember } = useAdminData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const initialForm = {
     name: '',
@@ -45,9 +47,32 @@ export default function AdminTeam({ showToast }) {
     setModalOpen(true);
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Direct cloud upload if Supabase is connected
+    if (isSupabaseConfigured()) {
+      setIsUploadingImage(true);
+      if (showToast) showToast('Uploading image to Supabase Cloud CDN...');
+      try {
+        const res = await uploadMediaFile(file, 'team');
+        setIsUploadingImage(false);
+        if (res.success && res.url) {
+          setFormData(prev => ({ ...prev, img: res.url }));
+          if (showToast) showToast('Profile photo uploaded & synced to Cloud Storage!');
+          return;
+        } else {
+          console.warn('Supabase storage upload error:', res.message);
+          if (showToast) showToast('Cloud upload fallback: optimizing locally...');
+        }
+      } catch (err) {
+        setIsUploadingImage(false);
+        console.warn('Storage error:', err);
+      }
+    }
+
+    // Local fallback optimization
     const reader = new FileReader();
     reader.onload = (uploadEvent) => {
       const img = new Image();
@@ -281,12 +306,13 @@ export default function AdminTeam({ showToast }) {
                   placeholder="Image URL or upload below"
                 />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
-                  <label className="adm-btn adm-btn-secondary adm-btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
-                    <i className="bi bi-upload"></i>
-                    <span>Upload Photo from Device</span>
+                  <label className="adm-btn adm-btn-secondary adm-btn-sm" style={{ cursor: isUploadingImage ? 'not-allowed' : 'pointer', margin: 0, opacity: isUploadingImage ? 0.7 : 1 }}>
+                    <i className={isUploadingImage ? 'spinner-border spinner-border-sm' : 'bi bi-upload'}></i>
+                    <span>{isUploadingImage ? 'Uploading to Cloud CDN...' : 'Upload Photo from Device'}</span>
                     <input
                       type="file"
                       accept="image/*"
+                      disabled={isUploadingImage}
                       onChange={handleImageUpload}
                       style={{ display: 'none' }}
                     />
