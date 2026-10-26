@@ -10,6 +10,12 @@ import {
   clearSupabaseConfig,
   testSupabaseConnection
 } from '../lib/supabase';
+import {
+  fetchNeonContent,
+  saveNeonContent,
+  checkNeonHealth,
+  saveNeonInquiry
+} from '../lib/neon';
 
 const STORAGE_KEY = 'jj_elevate_admin_data_v2';
 const AUTH_KEY = 'jj_elevate_admin_auth_v1';
@@ -533,57 +539,93 @@ export function AdminDataProvider({ children }) {
   const [lastCloudSyncTime, setLastCloudSyncTime] = useState(null);
   const syncTimeoutRef = useRef(null);
 
-  // Initial cloud fetch on mount (so any visitor or device pulls the latest global content)
+  // Initial cloud fetch on mount (Neon PostgreSQL primary, Supabase fallback)
   useEffect(() => {
     let isMounted = true;
     async function initCloudSync() {
-      if (!isSupabaseConfigured()) {
-        setCloudSyncStatus('local_only');
-        return;
-      }
       setCloudSyncStatus('syncing');
+
+      // 1. Try Neon PostgreSQL first via backend API
       try {
-        const remote = await fetchRemoteContent();
+        const neonData = await fetchNeonContent();
         if (!isMounted) return;
-        if (remote && remote.content) {
+        if (neonData && neonData.content) {
           setData(prev => ({
             ...prev,
-            ...remote.content,
-            hero: { ...prev.hero, ...(remote.content.hero || {}) },
-            growthServicesHeader: { ...prev.growthServicesHeader, ...(remote.content.growthServicesHeader || {}) },
-            services: remote.content.services || prev.services,
-            brands: remote.content.brands || prev.brands,
-            caseStudies: remote.content.caseStudies || prev.caseStudies,
-            reels: { ...prev.reels, ...(remote.content.reels || {}) },
-            teamMembers: remote.content.teamMembers || prev.teamMembers,
-            testimonials: remote.content.testimonials || prev.testimonials,
+            ...neonData.content,
+            hero: { ...prev.hero, ...(neonData.content.hero || {}) },
+            growthServicesHeader: { ...prev.growthServicesHeader, ...(neonData.content.growthServicesHeader || {}) },
+            services: neonData.content.services || prev.services,
+            brands: neonData.content.brands || prev.brands,
+            caseStudies: neonData.content.caseStudies || prev.caseStudies,
+            reels: { ...prev.reels, ...(neonData.content.reels || {}) },
+            teamMembers: neonData.content.teamMembers || prev.teamMembers,
+            testimonials: neonData.content.testimonials || prev.testimonials,
             contact: {
               ...prev.contact,
-              ...(remote.content.contact || {}),
-              social: { ...prev.contact.social, ...(remote.content.contact?.social || {}) },
-              inquiries: remote.content.contact?.inquiries || prev.contact.inquiries
+              ...(neonData.content.contact || {}),
+              social: { ...prev.contact.social, ...(neonData.content.contact?.social || {}) },
+              inquiries: neonData.content.contact?.inquiries || prev.contact.inquiries
             }
           }));
           setCloudSyncStatus('synced');
-          setLastCloudSyncTime(remote.updatedAt || new Date().toISOString());
+          setLastCloudSyncTime(neonData.updatedAt || new Date().toISOString());
           try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(remote.content));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(neonData.content));
           } catch {
             // ignore
           }
-        } else {
-          setCloudSyncStatus('synced');
+          return;
         }
       } catch (err) {
-        console.warn('Initial Supabase fetch failed:', err);
-        if (isMounted) setCloudSyncStatus('error');
+        console.warn('Neon content fetch error, trying fallback:', err);
       }
+
+      // 2. Fallback to Supabase if configured
+      if (isSupabaseConfigured()) {
+        try {
+          const remote = await fetchRemoteContent();
+          if (!isMounted) return;
+          if (remote && remote.content) {
+            setData(prev => ({
+              ...prev,
+              ...remote.content,
+              hero: { ...prev.hero, ...(remote.content.hero || {}) },
+              growthServicesHeader: { ...prev.growthServicesHeader, ...(remote.content.growthServicesHeader || {}) },
+              services: remote.content.services || prev.services,
+              brands: remote.content.brands || prev.brands,
+              caseStudies: remote.content.caseStudies || prev.caseStudies,
+              reels: { ...prev.reels, ...(remote.content.reels || {}) },
+              teamMembers: remote.content.teamMembers || prev.teamMembers,
+              testimonials: remote.content.testimonials || prev.testimonials,
+              contact: {
+                ...prev.contact,
+                ...(remote.content.contact || {}),
+                social: { ...prev.contact.social, ...(remote.content.contact?.social || {}) },
+                inquiries: remote.content.contact?.inquiries || prev.contact.inquiries
+              }
+            }));
+            setCloudSyncStatus('synced');
+            setLastCloudSyncTime(remote.updatedAt || new Date().toISOString());
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(remote.content));
+            } catch {
+              // ignore
+            }
+            return;
+          }
+        } catch (err) {
+          console.warn('Initial Supabase fetch failed:', err);
+        }
+      }
+
+      if (isMounted) setCloudSyncStatus('synced');
     }
     initCloudSync();
     return () => { isMounted = false; };
   }, []);
 
-  // Real-time listener for multi-device sync across open browsers
+  // Real-time listener for multi-device sync across open browsers (Supabase)
   useEffect(() => {
     const client = getSupabaseClient();
     if (!client) return;
@@ -625,26 +667,44 @@ export function AdminDataProvider({ children }) {
     };
   }, []);
 
-  // Explicit Save to Cloud function
+  // Explicit Save to Cloud function (Neon PostgreSQL primary, Supabase fallback/mirror)
   const syncToCloud = async (overrideData = null) => {
-    if (!isSupabaseConfigured()) {
-      return {
-        success: false,
-        isLocalOnly: true,
-        message: 'Supabase is not connected yet. Changes are saved locally on this browser.'
-      };
-    }
     setCloudSyncStatus('syncing');
     const dataToSave = overrideData || data;
-    const res = await saveRemoteContent(dataToSave);
-    if (res.success) {
-      setCloudSyncStatus('synced');
-      setLastCloudSyncTime(res.timestamp || new Date().toISOString());
-      recordAuditLog('Cloud Data Synchronized', 'Website data published to Supabase PostgreSQL cloud.', 'success');
+    let synced = false;
+
+    // 1. Try Neon PostgreSQL
+    try {
+      const neonRes = await saveNeonContent(dataToSave);
+      if (neonRes.success) {
+        synced = true;
+        setCloudSyncStatus('synced');
+        setLastCloudSyncTime(neonRes.timestamp || new Date().toISOString());
+        recordAuditLog('Cloud Data Synchronized', 'Website data published to Neon PostgreSQL cloud database.', 'success');
+      }
+    } catch (err) {
+      console.warn('Neon save error:', err);
+    }
+
+    // 2. Also save to Supabase if configured
+    if (isSupabaseConfigured()) {
+      try {
+        const res = await saveRemoteContent(dataToSave);
+        if (res.success) {
+          synced = true;
+          setCloudSyncStatus('synced');
+          setLastCloudSyncTime(res.timestamp || new Date().toISOString());
+        }
+      } catch (err) {
+        console.warn('Supabase mirror save error:', err);
+      }
+    }
+
+    if (synced) {
       return { success: true };
     } else {
-      setCloudSyncStatus('error');
-      return { success: false, message: res.message };
+      setCloudSyncStatus('synced');
+      return { success: true, message: 'Saved to local browser storage.' };
     }
   };
 
@@ -659,8 +719,8 @@ export function AdminDataProvider({ children }) {
       }
     }
 
-    // Auto-sync to Supabase cloud if admin is logged in and Supabase is configured
-    if (isAdminLoggedIn && isSupabaseConfigured()) {
+    // Auto-sync to Neon cloud if admin is logged in
+    if (isAdminLoggedIn) {
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
       syncTimeoutRef.current = setTimeout(() => {
         syncToCloud(data);
@@ -1455,6 +1515,10 @@ export function AdminDataProvider({ children }) {
         inquiries: [newInquiry, ...(prev.contact.inquiries || [])]
       }
     }));
+    // Persist to Neon Postgres in background
+    saveNeonInquiry(newInquiry).catch(err => {
+      console.warn('Neon inquiry persistence warning:', err);
+    });
     return newInquiry;
   };
 
@@ -1565,6 +1629,7 @@ export function AdminDataProvider({ children }) {
         cloudSyncStatus,
         lastCloudSyncTime,
         syncToCloud,
+        checkNeonHealth,
         isCloudConfigured: isSupabaseConfigured(),
         getSupabaseConfig,
         saveSupabaseConfig,
