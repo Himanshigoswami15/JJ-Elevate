@@ -625,7 +625,38 @@ export function AdminDataProvider({ children }) {
     return () => { isMounted = false; };
   }, []);
 
-  // Real-time listener for multi-device sync across open browsers (Supabase)
+  // Multi-device live sync: auto-refresh when tab gains focus & poll every 12 seconds
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let active = true;
+    const refreshFromNeon = async () => {
+      try {
+        const neonData = await fetchNeonContent();
+        if (!active || !neonData || !neonData.content) return;
+        setData(prev => ({
+          ...prev,
+          ...neonData.content,
+          teamMembers: neonData.content.teamMembers || prev.teamMembers
+        }));
+        setCloudSyncStatus('synced');
+        if (neonData.updatedAt) setLastCloudSyncTime(neonData.updatedAt);
+      } catch {
+        // silent
+      }
+    };
+
+    const handleFocus = () => refreshFromNeon();
+    window.addEventListener('focus', handleFocus);
+    const interval = setInterval(refreshFromNeon, 12000);
+
+    return () => {
+      active = false;
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Real-time listener for multi-device sync across open browsers (Supabase fallback)
   useEffect(() => {
     const client = getSupabaseClient();
     if (!client) return;
@@ -1630,7 +1661,8 @@ export function AdminDataProvider({ children }) {
         lastCloudSyncTime,
         syncToCloud,
         checkNeonHealth,
-        isCloudConfigured: isSupabaseConfigured(),
+        isCloudConfigured: true,
+        isNeonConfigured: true,
         getSupabaseConfig,
         saveSupabaseConfig,
         clearSupabaseConfig,

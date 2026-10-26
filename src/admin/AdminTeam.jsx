@@ -10,7 +10,7 @@ const TEAM_AVATAR_PRESETS = [
 ];
 
 export default function AdminTeam({ showToast }) {
-  const { data, addTeamMember, updateTeamMember, deleteTeamMember } = useAdminData();
+  const { data, addTeamMember, updateTeamMember, deleteTeamMember, syncToCloud } = useAdminData();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -72,7 +72,7 @@ export default function AdminTeam({ showToast }) {
       }
     }
 
-    // Local fallback optimization
+    // Local fallback optimization (saved directly into Neon database JSON state)
     const reader = new FileReader();
     reader.onload = (uploadEvent) => {
       const img = new Image();
@@ -98,7 +98,7 @@ export default function AdminTeam({ showToast }) {
         ctx.drawImage(img, 0, 0, w, h);
         const compressed = canvas.toDataURL('image/jpeg', 0.85);
         setFormData(prev => ({ ...prev, img: compressed }));
-        showToast('Profile image uploaded & optimized successfully!');
+        showToast('Profile image uploaded! Click Save to publish to Neon.');
       };
       img.onerror = () => {
         setFormData(prev => ({ ...prev, img: uploadEvent.target.result }));
@@ -128,6 +128,10 @@ export default function AdminTeam({ showToast }) {
       showToast(`Team member "${formData.name}" added!`);
     }
 
+    if (syncToCloud) {
+      syncToCloud();
+    }
+
     setModalOpen(false);
   };
 
@@ -135,6 +139,9 @@ export default function AdminTeam({ showToast }) {
     if (window.confirm(`Are you sure you want to remove team member "${name}"?`)) {
       deleteTeamMember(id);
       showToast(`Team member "${name}" removed.`);
+      if (syncToCloud) {
+        syncToCloud();
+      }
     }
   };
 

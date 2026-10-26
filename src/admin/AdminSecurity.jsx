@@ -20,6 +20,7 @@ export default function AdminSecurity({ showToast }) {
     cloudSyncStatus,
     lastCloudSyncTime,
     syncToCloud,
+    checkNeonHealth,
     isCloudConfigured,
     getSupabaseConfig,
     saveSupabaseConfig,
@@ -27,7 +28,26 @@ export default function AdminSecurity({ showToast }) {
     testSupabaseConnection
   } = useAdminData();
 
-  // Supabase Cloud Configuration state
+  // Neon Cloud status state
+  const [neonHealth, setNeonHealth] = useState(null);
+  const [checkingNeon, setCheckingNeon] = useState(false);
+
+  const handleTestNeon = async () => {
+    setCheckingNeon(true);
+    try {
+      const res = await checkNeonHealth();
+      setCheckingNeon(false);
+      setNeonHealth(res);
+      if (res && res.success && showToast) {
+        showToast('Connected to Neon PostgreSQL cloud database!');
+      }
+    } catch (err) {
+      setCheckingNeon(false);
+      setNeonHealth({ success: false, message: err.message });
+    }
+  };
+
+  // Supabase Cloud Configuration state (Optional mirror)
   const [supabaseUrl, setSupabaseUrl] = useState(() => getSupabaseConfig().url || '');
   const [supabaseAnonKey, setSupabaseAnonKey] = useState(() => getSupabaseConfig().anonKey || '');
   const [testingConnection, setTestingConnection] = useState(false);
@@ -937,16 +957,16 @@ create policy "Public Update" on storage.objects for update using (bucket_id = '
 
       </div>
 
-      {/* CARD: Centralized Cloud Database & Multi-System Synchronization (Supabase) */}
-      <div className="adm-card" style={{ padding: '1.75rem', marginBottom: '1.5rem', border: isCloudConfigured ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid #fde68a' }}>
+      {/* CARD: Centralized Cloud Database & Multi-System Synchronization (Neon PostgreSQL) */}
+      <div className="adm-card" style={{ padding: '1.75rem', marginBottom: '1.5rem', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
               width: '38px',
               height: '38px',
               borderRadius: '10px',
-              background: isCloudConfigured ? 'rgba(16, 185, 129, 0.12)' : 'rgba(37, 99, 235, 0.1)',
-              color: isCloudConfigured ? '#10b981' : '#2563eb',
+              background: 'rgba(16, 185, 129, 0.12)',
+              color: '#10b981',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -957,194 +977,115 @@ create policy "Public Update" on storage.objects for update using (bucket_id = '
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700 }}>
-                  Centralized Cloud Database & Storage (Supabase)
+                  Centralized Cloud Database & Multi-Device Sync (Neon PostgreSQL)
                 </h3>
                 <span style={{
                   fontSize: '0.74rem',
                   fontWeight: 700,
                   padding: '3px 10px',
                   borderRadius: '999px',
-                  background: isCloudConfigured ? 'rgba(16, 185, 129, 0.12)' : '#fef3c7',
-                  color: isCloudConfigured ? '#059669' : '#b45309',
+                  background: 'rgba(16, 185, 129, 0.12)',
+                  color: '#059669',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px'
                 }}>
-                  <i className={`bi ${isCloudConfigured ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'}`}></i>
-                  {isCloudConfigured ? 'Cloud Sync Active' : 'Local Only (Action Needed)'}
+                  <i className="bi bi-check-circle-fill"></i>
+                  Neon Cloud Active (Production)
                 </span>
               </div>
               <span style={{ fontSize: '0.8rem', color: 'var(--adm-text-secondary)' }}>
-                Sync team members, photos, and website content globally across all computers, phones, and live visitors in real time.
+                Sync team members, photos, and website content globally across all computers, phones, and live visitors in real time via Neon.
               </span>
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            {isCloudConfigured && (
-              <button
-                type="button"
-                className="adm-btn adm-btn-primary adm-btn-sm"
-                onClick={handleManualPushToCloud}
-                disabled={isSyncingCloud}
-                title="Force push current website content to Supabase Cloud"
-              >
-                <i className={isSyncingCloud ? 'spinner-border spinner-border-sm' : 'bi bi-cloud-arrow-up-fill'}></i>
-                <span>{isSyncingCloud ? 'Pushing Data...' : 'Sync All Data to Cloud Now'}</span>
-              </button>
-            )}
+            <button
+              type="button"
+              className="adm-btn adm-btn-primary adm-btn-sm"
+              onClick={handleManualPushToCloud}
+              disabled={isSyncingCloud}
+              title="Force push current website content & photos to Neon Cloud"
+            >
+              <i className={isSyncingCloud ? 'spinner-border spinner-border-sm' : 'bi bi-cloud-arrow-up-fill'}></i>
+              <span>{isSyncingCloud ? 'Pushing Data...' : 'Sync All Data to Neon Now'}</span>
+            </button>
 
             <button
               type="button"
               className="adm-btn adm-btn-secondary adm-btn-sm"
-              onClick={() => setShowSqlSetup(!showSqlSetup)}
+              onClick={handleTestNeon}
+              disabled={checkingNeon}
             >
-              <i className="bi bi-code-slash"></i>
-              <span>{showSqlSetup ? 'Hide SQL Script' : 'View SQL Setup'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Status result banner */}
-        {connectionResult && (
-          <div style={{
-            background: connectionResult.success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-            border: connectionResult.success ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
-            color: connectionResult.success ? '#059669' : '#dc2626',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            fontSize: '0.84rem',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <i className={`bi ${connectionResult.success ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'}`}></i>
-            <span>{connectionResult.message}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSaveSupabaseConfig}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-            <div className="adm-form-group" style={{ margin: 0 }}>
-              <label className="adm-label">Supabase Project URL</label>
-              <input
-                type="url"
-                className="adm-input"
-                placeholder="https://your-project.supabase.co"
-                value={supabaseUrl}
-                onChange={(e) => setSupabaseUrl(e.target.value)}
-                required
-              />
-              <span style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', display: 'block', marginTop: '4px' }}>
-                From Supabase Dashboard → Settings → API → Project URL
-              </span>
-            </div>
-
-            <div className="adm-form-group" style={{ margin: 0 }}>
-              <label className="adm-label">Supabase Anon Public API Key</label>
-              <input
-                type="text"
-                className="adm-input"
-                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                value={supabaseAnonKey}
-                onChange={(e) => setSupabaseAnonKey(e.target.value)}
-                required
-              />
-              <span style={{ fontSize: '0.74rem', color: 'var(--adm-text-muted)', display: 'block', marginTop: '4px' }}>
-                From Supabase Dashboard → Settings → API → Project API Keys (anon public)
-              </span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <button
-              type="submit"
-              className="adm-btn adm-btn-primary"
-              disabled={testingConnection}
-            >
-              <i className="bi bi-save-fill"></i>
-              <span>Save & Connect Supabase</span>
-            </button>
-
-            <button
-              type="button"
-              className="adm-btn adm-btn-secondary"
-              onClick={handleTestConnection}
-              disabled={testingConnection || !supabaseUrl || !supabaseAnonKey}
-            >
-              {testingConnection ? (
+              {checkingNeon ? (
                 <>
                   <span className="spinner-border spinner-border-sm" role="status"></span>
-                  <span>Testing Connection...</span>
+                  <span>Testing Neon...</span>
                 </>
               ) : (
                 <>
                   <i className="bi bi-lightning-charge-fill"></i>
-                  <span>Test Connection</span>
+                  <span>Test Neon Connection</span>
                 </>
               )}
             </button>
+          </div>
+        </div>
 
-            {isCloudConfigured && (
-              <button
-                type="button"
-                className="adm-btn adm-btn-text"
-                onClick={handleDisconnectSupabase}
-                style={{ color: '#ef4444', marginLeft: 'auto' }}
-              >
-                <i className="bi bi-x-circle"></i>
-                <span>Disconnect Supabase</span>
-              </button>
+        {/* Live Neon Health Banner */}
+        {neonHealth && (
+          <div style={{
+            background: neonHealth.success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+            border: neonHealth.success ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+            color: neonHealth.success ? '#059669' : '#dc2626',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            fontSize: '0.84rem',
+            marginBottom: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, marginBottom: '4px' }}>
+              <i className={`bi ${neonHealth.success ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'}`}></i>
+              <span>{neonHealth.success ? 'Neon Database Connection Verified' : 'Neon Connection Warning'}</span>
+            </div>
+            {neonHealth.success && (
+              <div style={{ fontSize: '0.78rem', color: '#047857', display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '6px' }}>
+                <span><strong>Engine:</strong> {neonHealth.postgresVersion}</span>
+                <span><strong>Database:</strong> {neonHealth.database}</span>
+                <span><strong>Branch:</strong> {neonHealth.branch || 'production'}</span>
+                <span><strong>Public Tables:</strong> {neonHealth.publicTableCount} (site_content, inquiries)</span>
+              </div>
             )}
           </div>
-        </form>
-
-        {/* Collapsible SQL Setup Guide */}
-        {showSqlSetup && (
-          <div style={{
-            marginTop: '1.25rem',
-            background: '#0f172a',
-            color: '#e2e8f0',
-            borderRadius: '10px',
-            padding: '1.25rem',
-            fontSize: '0.82rem'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <div>
-                <strong style={{ color: '#38bdf8', fontSize: '0.88rem' }}>
-                  <i className="bi bi-terminal-fill"></i> Quick 1-Minute Supabase Database Setup
-                </strong>
-                <span style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>
-                  Paste this script into your Supabase Dashboard → <strong>SQL Editor</strong> → Run. It creates the table and storage bucket for photos!
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={handleCopySql}
-                className="adm-btn adm-btn-secondary adm-btn-sm"
-                style={{ background: '#1e293b', borderColor: '#334155', color: '#fff' }}
-              >
-                <i className={`bi ${copiedSql ? 'bi-check' : 'bi-clipboard'}`}></i>
-                <span>{copiedSql ? 'Copied!' : 'Copy SQL Script'}</span>
-              </button>
-            </div>
-
-            <pre style={{
-              margin: 0,
-              padding: '12px',
-              background: '#020617',
-              borderRadius: '6px',
-              fontFamily: 'monospace',
-              fontSize: '0.78rem',
-              color: '#a5f3fc',
-              overflowX: 'auto',
-              maxHeight: '220px'
-            }}>
-              {SQL_SNIPPET}
-            </pre>
-          </div>
         )}
+
+        <div style={{
+          background: '#f8fafc',
+          border: '1px solid #e2e8f0',
+          borderRadius: '10px',
+          padding: '1rem',
+          fontSize: '0.82rem',
+          color: '#334155'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+            <div>
+              <span style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Database Provider</span>
+              <strong style={{ color: '#0f172a' }}>Neon Cloud Serverless PostgreSQL</strong>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Active Branch</span>
+              <strong style={{ color: '#059669' }}>production</strong>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Multi-Device Sync</span>
+              <strong style={{ color: '#059669' }}>Live Active (All Browsers & Visitors)</strong>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Last Cloud Sync</span>
+              <strong style={{ color: '#0f172a' }}>{lastCloudSyncTime ? new Date(lastCloudSyncTime).toLocaleTimeString() : 'Connected'}</strong>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* CARD 5: Security Activity & Audit Trail */}

@@ -144,7 +144,7 @@ export default function DreamTeam({ className = '' }) {
     };
   }, []);
 
-  const rawTeam = syncedTeam || adminTeam;
+  const rawTeam = (adminTeam && adminTeam.length > 0) ? adminTeam : (syncedTeam || teamMembersData);
 
   const activeTeamMembers = (rawTeam && rawTeam.length > 0)
     ? rawTeam.filter(m => m.active !== false).map((m, idx) => ({

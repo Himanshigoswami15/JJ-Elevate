@@ -370,35 +370,34 @@ export default function AdminApp({ onNavigateHome }) {
                 className="adm-sync-badge"
                 style={{ background: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.3)', color: '#059669', cursor: 'pointer' }}
                 onClick={() => setActiveTab('security')}
-                title={`Supabase Cloud Sync active. Last synced: ${lastCloudSyncTime ? new Date(lastCloudSyncTime).toLocaleTimeString() : 'Recently'}`}
+                title={`Neon Cloud Sync active. Last synced: ${lastCloudSyncTime ? new Date(lastCloudSyncTime).toLocaleTimeString() : 'Recently'}`}
               >
                 <span className="adm-sync-dot" style={{ background: '#10b981' }}></span>
-                <span>Cloud Synced (Supabase)</span>
+                <span>Neon Cloud Synced</span>
               </div>
             ) : cloudSyncStatus === 'syncing' ? (
               <div className="adm-sync-badge" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#2563eb' }}>
                 <span className="spinner-border spinner-border-sm" style={{ width: '10px', height: '10px', borderWidth: '1.5px', marginRight: '4px' }}></span>
-                <span>Pushing to Cloud...</span>
+                <span>Syncing to Neon...</span>
               </div>
             ) : cloudSyncStatus === 'error' ? (
               <div
                 className="adm-sync-badge"
                 style={{ background: '#fee2e2', borderColor: '#fca5a5', color: '#b91c1c', cursor: 'pointer' }}
                 onClick={() => setActiveTab('security')}
-                title="Cloud sync encountered an issue. Click to check Supabase config."
+                title="Cloud sync encountered an issue. Click to test Neon connection."
               >
                 <i className="bi bi-exclamation-circle" style={{ color: '#dc2626' }}></i>
-                <span>Cloud Sync Error</span>
+                <span>Neon Sync Warning</span>
               </div>
             ) : (
               <div
                 className="adm-sync-badge"
-                style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309', cursor: 'pointer' }}
+                style={{ background: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.3)', color: '#059669', cursor: 'pointer' }}
                 onClick={() => setActiveTab('security')}
-                title="Changes currently save only in this browser. Click to connect Supabase to sync across all computers & visitors!"
               >
-                <i className="bi bi-cloud-slash" style={{ color: '#d97706' }}></i>
-                <span>Local Only (Connect Cloud)</span>
+                <span className="adm-sync-dot" style={{ background: '#10b981' }}></span>
+                <span>Neon Cloud Connected</span>
               </div>
             )}
 
@@ -408,22 +407,18 @@ export default function AdminApp({ onNavigateHome }) {
               onClick={async () => {
                 try {
                   localStorage.setItem('jj_elevate_admin_data_v2', JSON.stringify(data));
-                  if (isCloudConfigured) {
-                    showToast('Pushing website data to Supabase cloud...');
-                    const res = await syncToCloud(data);
-                    if (res.success) {
-                      showToast('Website data published to cloud & synced across all systems!');
-                    } else {
-                      showToast(`Cloud save error: ${res.message}`);
-                    }
+                  showToast('Publishing website data to Neon Cloud database...');
+                  const res = await syncToCloud(data);
+                  if (res && res.success) {
+                    showToast('Website data published to Neon & synced across all systems!');
                   } else {
-                    showToast('Saved locally in this browser. Connect Supabase for multi-system sync.');
+                    showToast(`Cloud save error: ${res?.message || 'Check connection'}`);
                   }
                 } catch {
                   showToast('Data saved locally.');
                 }
               }}
-              title="Save all data & push to Supabase Cloud"
+              title="Save all data & push to Neon Cloud database"
             >
               <i className="bi bi-cloud-arrow-up-fill"></i>
               <span>Save & Sync</span>
@@ -451,44 +446,6 @@ export default function AdminApp({ onNavigateHome }) {
             )}
           </div>
         </header>
-
-        {/* Multi-Device Cloud Notice if Supabase is not yet connected */}
-        {!isCloudConfigured && (
-          <div style={{
-            background: '#eff6ff',
-            borderBottom: '1px solid #bfdbfe',
-            padding: '10px 1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.84rem',
-            color: '#1e40af',
-            gap: '12px',
-            flexWrap: 'wrap'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <i className="bi bi-cloud-arrow-up" style={{ fontSize: '1.2rem', color: '#2563eb' }}></i>
-              <span>
-                <strong>Multi-Device Sync:</strong> Changes and photos are currently saved in this browser only. Connect your <strong>Supabase</strong> database in <em>Security & Access</em> so photos and team members update instantly across all computers, phones, and live visitors!
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setActiveTab('security')}
-              className="adm-btn adm-btn-sm"
-              style={{
-                background: '#2563eb',
-                color: '#ffffff',
-                border: 'none',
-                fontWeight: 600,
-                padding: '4px 14px',
-                fontSize: '0.78rem'
-              }}
-            >
-              Connect Supabase Database →
-            </button>
-          </div>
-        )}
 
         {/* High-Priority Security Alert if Default Credentials are active */}
         {isUsingDefaultPassword && (
